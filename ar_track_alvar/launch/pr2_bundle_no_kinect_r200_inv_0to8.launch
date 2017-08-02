@@ -1,0 +1,15 @@
+<launch>
+	<node pkg="tf" type="static_transform_publisher" name="map_to_camera_link" output="screen" args="0 0 0 0.785398163 0 0 map ar_marker_4 10" />
+	<arg name="inverse_tf" default="true" />
+	<arg name="marker_size" default="4.5" />
+	<arg name="max_new_marker_error" default="0.08" />
+	<arg name="max_track_error" default="0.2" />
+        
+	<arg name="cam_image_topic" default="camera/color/image_raw" />
+	<arg name="cam_info_topic" default="camera/color/camera_info" />
+        
+	<arg name="output_frame" default="/camera_link" />
+	<arg name="bundle_files" default="$(find ar_track_alvar)/bundles/table_0to8.xml" />
+
+	<node name="ar_track_alvar" pkg="ar_track_alvar" type="findMarkerBundlesNoKinect" respawn="false" output="screen" args="$(arg marker_size) $(arg max_new_marker_error) $(arg max_track_error) $(arg cam_image_topic) $(arg cam_info_topic) $(arg output_frame) $(arg inverse_tf) $(arg bundle_files)" />
+</launch>
