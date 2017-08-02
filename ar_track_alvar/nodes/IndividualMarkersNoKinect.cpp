@@ -75,6 +75,8 @@ std::string output_frame;
 int marker_resolution = 5; // default marker resolution
 int marker_margin = 2; // default marker margin
 
+bool inverse_tf = false;
+
 void getCapCallback (const sensor_msgs::ImageConstPtr & image_msg);
 
 
@@ -139,8 +141,14 @@ void getCapCallback (const sensor_msgs::ImageConstPtr & image_msg)
 				out << id;
 				std::string id_string = out.str();
 				markerFrame += id_string;
-				tf::StampedTransform camToMarker (t, image_msg->header.stamp, image_msg->header.frame_id, markerFrame.c_str());
-    			tf_broadcaster->sendTransform(camToMarker);
+				if (inverse_tf) {
+				  tf::StampedTransform markerToCam (t.inverse(), image_msg->header.stamp, markerFrame.c_str(), output_frame);
+				  tf_broadcaster->sendTransform(markerToCam);
+				} else {
+				  tf::StampedTransform camToMarker (t, image_msg->header.stamp, image_msg->header.frame_id, markerFrame.c_str());
+				  tf_broadcaster->sendTransform(camToMarker);
+				}
+
 
 				//Create the rviz visualization messages
 				tf::poseTFToMsg (markerPose, rvizMarker_.pose);
@@ -247,7 +255,7 @@ int main(int argc, char *argv[])
       std::cout << std::endl;
       cout << "Not enough arguments provided." << endl;
       cout << "Usage: ./individualMarkersNoKinect <marker size in cm> <max new marker error> <max track error> "
-           << "<cam image topic> <cam info topic> <output frame> [ <max frequency> <marker_resolution> <marker_margin>]";
+           << "<cam image topic> <cam info topic> <output frame> [ <max frequency> <marker_resolution> <marker_margin> <inverse tf or not (true or false)> ]";
       std::cout << std::endl;
       return 0;
     }
@@ -268,6 +276,15 @@ int main(int argc, char *argv[])
       marker_resolution = atoi(argv[8]);
     if (argc > 9)
       marker_margin = atoi(argv[9]);
+    if (argc > 10) {
+      std::stringstream tmpss(argv[10]);
+      if(!(tmpss >> std::boolalpha >> inverse_tf)) {
+        // parse failed
+        inverse_tf = false;
+      }
+    } else {
+      inverse_tf = false;
+    }
 
   } else {
     // Get params from ros param server.
@@ -278,6 +295,7 @@ int main(int argc, char *argv[])
     pn.setParam("max_frequency", max_frequency);  // in case it was not set.
     pn.param("marker_resolution", marker_resolution, 5);
     pn.param("marker_margin", marker_margin, 2);
+    pn.param("inverse_tf", inverse_tf, false);
     if (!pn.getParam("output_frame", output_frame)) {
       ROS_ERROR("Param 'output_frame' has to be set.");
       exit(EXIT_FAILURE);

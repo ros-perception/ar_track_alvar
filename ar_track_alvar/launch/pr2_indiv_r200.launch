@@ -1,12 +1,13 @@
 <launch>
+	<node pkg="tf" type="static_transform_publisher" name="map_to_camera" output="screen" args="0 0 0 0.785398163 0 0 map camera_link 10" />
 	<arg name="inverse_tf" default="false" />
-	<arg name="marker_size" default="4.4" />
+	<arg name="marker_size" default="4.5" />
 	<arg name="max_new_marker_error" default="0.08" />
 	<arg name="max_track_error" default="0.2" />
 
-	<arg name="cam_image_topic" default="/kinect_head/depth_registered/points" />
-	<arg name="cam_info_topic" default="/kinect_head/rgb/camera_info" />
-	<arg name="output_frame" default="/torso_lift_link" />
+	<arg name="cam_image_topic" default="camera/depth/points" />
+	<arg name="cam_info_topic" default="camera/color/camera_info" />
+	<arg name="output_frame" default="/camera_link" />
 
 	<node name="ar_track_alvar" pkg="ar_track_alvar" type="individualMarkers" respawn="false" output="screen">
 		<param name="marker_size"           type="double" value="$(arg marker_size)" />

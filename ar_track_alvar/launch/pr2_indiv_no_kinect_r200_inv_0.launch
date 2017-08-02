@@ -1,14 +1,14 @@
 <launch>
-	<arg name="inverse_tf" default="false" />
-	<arg name="marker_size" default="4.4" />
+	<node pkg="tf" type="static_transform_publisher" name="map_to_camera_link" output="screen" args="0 0 0 0.785398163 0 0 map ar_marker_0 10" />
+	<arg name="inverse_tf" default="true" />
+	<arg name="marker_size" default="4.5" />
 	<arg name="max_new_marker_error" default="0.08" />
 	<arg name="max_track_error" default="0.2" />
+	<arg name="cam_image_topic" default="camera/color/image_raw" />
+	<arg name="cam_info_topic" default="camera/color/camera_info" />
+	<arg name="output_frame" default="/camera_link" />
 
-	<arg name="cam_image_topic" default="/kinect_head/depth_registered/points" />
-	<arg name="cam_info_topic" default="/kinect_head/rgb/camera_info" />
-	<arg name="output_frame" default="/torso_lift_link" />
-
-	<node name="ar_track_alvar" pkg="ar_track_alvar" type="individualMarkers" respawn="false" output="screen">
+	<node name="ar_track_alvar" pkg="ar_track_alvar" type="individualMarkersNoKinect" respawn="false" output="screen">
 		<param name="marker_size"           type="double" value="$(arg marker_size)" />
 		<param name="max_new_marker_error"  type="double" value="$(arg max_new_marker_error)" />
 		<param name="max_track_error"       type="double" value="$(arg max_track_error)" />
@@ -18,5 +18,4 @@
 		<remap from="camera_image"  to="$(arg cam_image_topic)" />
 		<remap from="camera_info"   to="$(arg cam_info_topic)" />
 	</node>
-
 </launch>
