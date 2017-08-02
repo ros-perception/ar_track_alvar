@@ -1,4 +1,5 @@
 <launch>
+	<arg name="inverse_tf" default="false" />
 	<arg name="marker_size" default="4.4" />
 	<arg name="max_new_marker_error" default="0.08" />
 	<arg name="max_track_error" default="0.2" />
@@ -11,6 +12,7 @@
 		<param name="max_new_marker_error"  type="double" value="$(arg max_new_marker_error)" />
 		<param name="max_track_error"       type="double" value="$(arg max_track_error)" />
 		<param name="output_frame"          type="string" value="$(arg output_frame)" />
+		<param name="inverse_tf"            type="bool"   value="$(arg inverse_tf)" />
 
 		<remap from="camera_image"  to="$(arg cam_image_topic)" />
 		<remap from="camera_info"   to="$(arg cam_info_topic)" />

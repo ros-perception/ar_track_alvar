@@ -112,6 +112,8 @@ std::string cam_info_topic;
 std::string output_frame;
 int n_bundles = 0;   
 
+bool inverse_tf = false;
+
 //Debugging utility function
 void draw3dPoints(ARCloud::Ptr cloud, string frame, int color, int id, double rad)
 {
@@ -527,8 +529,13 @@ void makeMarkerMsgs(int type, int id, Pose &p, sensor_msgs::ImageConstPtr image_
   out << id;
   std::string id_string = out.str();
   markerFrame += id_string;
-  tf::StampedTransform camToMarker (t, image_msg->header.stamp, image_msg->header.frame_id, markerFrame.c_str());
-  tf_broadcaster->sendTransform(camToMarker);
+  if (inverse_tf) {
+    tf::StampedTransform markerToCam (t.inverse(), image_msg->header.stamp, markerFrame.c_str(), output_frame);
+    tf_broadcaster->sendTransform(markerToCam);
+  } else {
+    tf::StampedTransform camToMarker (t, image_msg->header.stamp, image_msg->header.frame_id, markerFrame.c_str());
+    tf_broadcaster->sendTransform(camToMarker);
+  }
 
   //Create the rviz visualization message
   tf::poseTFToMsg (markerPose, rvizMarker->pose);
@@ -771,10 +778,10 @@ int main(int argc, char *argv[])
   ros::init (argc, argv, "marker_detect");
   ros::NodeHandle n;
 
-  if(argc < 9){
+  if(argc < 10){
     std::cout << std::endl;
     cout << "Not enough arguments provided." << endl;
-    cout << "Usage: ./findMarkerBundles <marker size in cm> <max new marker error> <max track error> <cam image topic> <cam info topic> <output frame> <median filt size> <list of bundle XML files...>" << endl;
+    cout << "Usage: ./findMarkerBundles <marker size in cm> <max new marker error> <max track error> <cam image topic> <cam info topic> <output frame> <median filt size> <inverse tf or not (true or false)> <list of bundle XML files...>" << endl;
     std::cout << std::endl;
     return 0;
   }
@@ -787,7 +794,12 @@ int main(int argc, char *argv[])
   cam_info_topic = argv[5];
   output_frame = argv[6];
   med_filt_size = atoi(argv[7]);
-  int n_args_before_list = 8;
+  std::stringstream tmpss(argv[8]);
+  if(!(tmpss >> std::boolalpha >> inverse_tf)) {
+    // parse failed
+    inverse_tf = false;
+  }
+  int n_args_before_list = 9;
   n_bundles = argc - n_args_before_list;
 
   marker_detector.SetMarkerSize(marker_size);
