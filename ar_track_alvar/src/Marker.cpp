@@ -838,7 +838,7 @@ void MarkerData::Read6bitStr(BitsetExt *bs, char *s, size_t s_max_len) {
 		if (bitpos < 0) {
 			if (c == 000)                      s[len] = ':';
 			else if ((c >= 001) && (c <= 032)) s[len] = 'a' + (char)c - 1;
-			else if ((c >= 033) && (c <= 044)) s[len] = '0' + (char)c - 1;
+			else if ((c >= 033) && (c <= 044)) s[len] = '0' + (char)c - 033;
 			else if (c == 045)                 s[len] = '+';
 			else if (c == 046)                 s[len] = '-';
 			else if (c == 047)                 s[len] = '*';

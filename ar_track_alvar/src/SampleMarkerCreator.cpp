@@ -77,7 +77,7 @@ struct State {
             if (marker_data_content_type == MarkerData::MARKER_CONTENT_TYPE_NUMBER) {
                 int idi = atoi(id);
                 md.SetContent(marker_data_content_type, idi, 0);
-                if (filename.str().length()<64) filename<<"_"<<idi;
+                if (filename.str().length()<200) filename<<"_"<<idi;
 
                 Pose pose;
                 pose.Reset();
@@ -92,7 +92,8 @@ struct State {
                     if (!isalnum(*p)) filename<<"_";
                     else filename<<(char)tolower(*p);
                     p++; counter++;
-                    if (counter > 8) break;
+                    //if (counter > 8) break;
+                    if (counter > 200) break;
                 }
             }
             md.ScaleMarkerToImage(img);
