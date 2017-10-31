@@ -111,6 +111,7 @@ void getCapCallback (const sensor_msgs::ImageConstPtr & image_msg)
 			{
 				//Get the pose relative to the camera
         		int id = (*(marker_detector.markers))[i].GetId();
+        		std::string content_str = (*(marker_detector.markers))[i].data.str;
 				Pose p = (*(marker_detector.markers))[i].pose;
 				double px = p.translation[0]/100.0;
 				double py = p.translation[1]/100.0;
@@ -213,6 +214,7 @@ void getCapCallback (const sensor_msgs::ImageConstPtr & image_msg)
       			ar_pose_marker.header.frame_id = output_frame;
 			    ar_pose_marker.header.stamp = image_msg->header.stamp;
 			    ar_pose_marker.id = id;
+			    ar_pose_marker.str = content_str;
 			    arPoseMarkers_.markers.push_back (ar_pose_marker);
 			}
 			arMarkerPub_.publish (arPoseMarkers_);
