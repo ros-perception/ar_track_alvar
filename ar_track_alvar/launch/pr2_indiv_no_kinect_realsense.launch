@@ -8,8 +8,9 @@
 	<arg name="cam_image_topic" default="camera/color/image_raw" />
 	<arg name="cam_info_topic" default="camera/color/camera_info" />
 	<arg name="output_frame" default="/camera_link" />
+	<arg name="node_name" default="ar_track_alvar" />
 
-	<node name="ar_track_alvar" pkg="ar_track_alvar" type="individualMarkersNoKinect" respawn="false" output="screen">
+	<node name="$(arg node_name)" pkg="ar_track_alvar" type="individualMarkersNoKinect" respawn="false" output="screen">
 		<param name="marker_size"           type="double" value="$(arg marker_size)" />
 		<param name="marker_resolution"     type="int"    value="$(arg marker_resolution)" />
 		<param name="max_new_marker_error"  type="double" value="$(arg max_new_marker_error)" />

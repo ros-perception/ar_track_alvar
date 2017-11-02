@@ -75,9 +75,10 @@ struct State {
                 maxx = new_maxx; maxy = new_maxy;
             }
             if (marker_data_content_type == MarkerData::MARKER_CONTENT_TYPE_NUMBER) {
-                int idi = atoi(id);
+                long idi = atol(id);
                 md.SetContent(marker_data_content_type, idi, 0);
-                if (filename.str().length()<200) filename<<"_"<<idi;
+                filename<<"_res"<<md.GetMarkerRes();
+                if (filename.str().length()<64) filename<<"_"<<idi;
 
                 Pose pose;
                 pose.Reset();
@@ -87,9 +88,10 @@ struct State {
                 md.SetContent(marker_data_content_type, 0, id);
                 const char *p = id;
                 int counter=0;
+                filename<<"_res"<<md.GetMarkerRes();
                 filename<<"_";
                 while(*p) {
-                    if (!isalnum(*p)) filename<<"_";
+                    if (!isalnum(*p)) filename<<"-";
                     else filename<<(char)tolower(*p);
                     p++; counter++;
                     //if (counter > 8) break;
@@ -107,8 +109,9 @@ struct State {
             img = cvCreateImage(cvSize(side_len, side_len), IPL_DEPTH_8U, 1);
             filename.str("");
             filename<<"MarkerArtoolkit";
-            md.SetContent(atoi(id));
-            filename<<"_"<<atoi(id);
+            md.SetContent(atol(id));
+            filename<<"_res"<<md.GetMarkerRes();
+            filename<<"_"<<atol(id);
             md.ScaleMarkerToImage(img);
         }
     }
@@ -182,7 +185,7 @@ int main(int argc, char *argv[])
             std::cout << "Usage:" << std::endl;
             std::cout << "  " << filename << " [options] argument" << std::endl;
             std::cout << std::endl;
-            std::cout << "    65535             marker with number 65535" << std::endl;
+            std::cout << "    65535             marker with number 65535 (max: " << INT_MAX << ") " << std::endl;
             std::cout << "    -f 65535          force hamming(8,4) encoding" << std::endl;
             std::cout << "    -1 \"hello world\"  marker with string" << std::endl;
             std::cout << "    -2 catalog.xml    marker with file reference" << std::endl;
@@ -206,13 +209,13 @@ int main(int argc, char *argv[])
                 std::cout<<"  marker side: "<<st.marker_side_len<<" units"<<std::endl;
                 bool loop=true;
                 std::string s;
-                int marker_id=0;
+                long marker_id=0;
                 double posx=0.0, posy=0.0;
                 bool vert=false;
                 while(loop) {
                     std::cout<<"  marker id (use -1 to end) ["<<marker_id<<"]: "; std::flush(std::cout);
-                    std::getline(std::cin, s); if (s.length() > 0) marker_id=atoi(s.c_str());
-                    if (marker_id < 0) break;
+                    std::getline(std::cin, s); if (s.length() > 0) marker_id=atol(s.c_str());
+                    if (marker_id < 0 || marker_id > INT_MAX ) break;
                     std::cout<<"  x position (in current units) ["<<posx<<"]: "; std::flush(std::cout);
                     std::getline(std::cin, s); if (s.length() > 0) posx=atof(s.c_str());
                     std::cout<<"  y position (in current units) ["<<posy<<"]: "; std::flush(std::cout);
@@ -245,8 +248,8 @@ int main(int argc, char *argv[])
             double rows_distance = 0;
             double cols_distance = 0;
             bool column_major = 1;
-            int first_id = 0;
-            int marker_id = 0;
+            long first_id = 0;
+            long marker_id = 0;
             std::string s;
             std::cout<<"\nPrompt marker placements interactively"<<std::endl;
             std::cout<<"  units: "<<st.units/96.0*2.54<<" cm "<<st.units/96.0<<" inches"<<std::endl;
@@ -262,7 +265,7 @@ int main(int argc, char *argv[])
             std::cout<<"Column major (1 or 0) : "; std::flush(std::cout);
             std::getline(std::cin, s); if (s.length() > 0) column_major=atoi(s.c_str());
             std::cout<<"First marker ID : "; std::flush(std::cout);
-            std::getline(std::cin, s); if (s.length() > 0) first_id=atoi(s.c_str());
+            std::getline(std::cin, s); if (s.length() > 0) first_id=atol(s.c_str());
             if(!column_major) {
                 for(int row = 0; row<rows; row++)
                     for(int col = 0; col<cols; col++)

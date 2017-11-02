@@ -512,6 +512,10 @@ void Marker::SetMarkerSize(double _edge_length, int _res, double _margin) {
 	marker_content = cvCreateMat(res, res, CV_8U);
 	cvSet(marker_content, cvScalar(255));
 }
+int Marker::GetMarkerRes(void){
+	return res;
+}
+
 Marker::~Marker() {
 	if (marker_content) cvReleaseMat(&marker_content);
 }

@@ -100,6 +100,8 @@ namespace alvar {
     void SetMarkerSize(double _edge_length = 0, int _res = 0, double _margin = 0);
     /** \brief Get edge length (to support different size markers */
     double GetMarkerEdgeLength() const { return edge_length; }
+    /** \brief Method for Get the marker resolution  */
+    int GetMarkerRes(void);
     /** \brief Destructor  */
     ~Marker();
     /** \brief Default constructor 
