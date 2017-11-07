@@ -1,5 +1,6 @@
 #include "ar_track_alvar/MultiMarker.h"
 #include "highgui.h"
+#include <unordered_map>
 using namespace std;
 using namespace alvar;
 
@@ -90,8 +91,32 @@ struct State {
                 int counter=0;
                 filename<<"_res"<<md.GetMarkerRes();
                 filename<<"_";
+		std::unordered_map<char, bool> unusable_char = {
+		  { '#', true },
+		  { '<', true },
+		  { '$', true },
+		  { '+', true },
+		  { '%', true },
+		  { '>', true },
+		  { '!', true },
+		  { '`', true },
+		  { '&', true },
+		  { '*', true },
+		  { '"', true },
+		  { '|', true },
+		  { '{', true },
+		  { '?', true },
+		  { '=', true },
+		  { '}', true },
+		  { '/', true },
+		  { ':', true },
+		  { '\\', true },
+		  { '\'', true },
+		  { '@', true }
+		};
                 while(*p) {
-                    if (!isalnum(*p)) filename<<"-";
+                    //if (!isalnum(*p)) filename<<"-";
+                    if (!isalnum(*p) && unusable_char.find((char)*p) != unusable_char.end()) filename<<"-";
                     else filename<<(char)tolower(*p);
                     p++; counter++;
                     //if (counter > 8) break;
