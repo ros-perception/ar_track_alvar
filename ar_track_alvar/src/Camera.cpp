@@ -229,6 +229,8 @@ void Camera::SetCameraInfo(const sensor_msgs::CameraInfo &camInfo)
 {
     cam_info_ = camInfo;
 
+    frame = cam_info_.header.frame_id;
+
     calib_x_res = cam_info_.width;
     calib_y_res = cam_info_.height;
     x_res = calib_x_res;
