@@ -202,17 +202,17 @@ int PlaneFitPoseImprovement(int id, const ARCloud &corners_3D, ARCloud::Ptr sele
   int i1,i2;
   if(isnan(corners_3D[0].x) || isnan(corners_3D[0].y) || isnan(corners_3D[0].z) ||
      isnan(corners_3D[3].x) || isnan(corners_3D[3].y) || isnan(corners_3D[3].z))
+  {
+    if(isnan(corners_3D[1].x) || isnan(corners_3D[1].y) || isnan(corners_3D[1].z) ||
+       isnan(corners_3D[2].x) || isnan(corners_3D[2].y) || isnan(corners_3D[2].z))
     {
-      if(isnan(corners_3D[1].x) || isnan(corners_3D[1].y) || isnan(corners_3D[1].z) ||
-	 isnan(corners_3D[2].x) || isnan(corners_3D[2].y) || isnan(corners_3D[2].z))
-	{
-	  return -1;
-	}
-      else{
-	i1 = 1;
-	i2 = 2;
-      }
+      return -1;
     }
+    else{
+      i1 = 1;
+      i2 = 2;
+    }
+  }
   else{
     i1 = 0;
     i2 = 3;
@@ -222,17 +222,17 @@ int PlaneFitPoseImprovement(int id, const ARCloud &corners_3D, ARCloud::Ptr sele
   int i3,i4;
   if(isnan(corners_3D[0].x) || isnan(corners_3D[0].y) || isnan(corners_3D[0].z) ||
      isnan(corners_3D[1].x) || isnan(corners_3D[1].y) || isnan(corners_3D[1].z))
+  {
+    if(isnan(corners_3D[3].x) || isnan(corners_3D[3].y) || isnan(corners_3D[3].z) ||
+     isnan(corners_3D[2].x) || isnan(corners_3D[2].y) || isnan(corners_3D[2].z))
     {
-      if(isnan(corners_3D[3].x) || isnan(corners_3D[3].y) || isnan(corners_3D[3].z) ||
-	 isnan(corners_3D[2].x) || isnan(corners_3D[2].y) || isnan(corners_3D[2].z))
-	{
-	  return -1;
-	}
-      else{
-	i3 = 2;
-	i4 = 3;
-      }
+      return -1;
     }
+    else{
+      i3 = 2;
+      i4 = 3;
+    }
+  }
   else{
     i3 = 1;
     i4 = 0;
@@ -272,47 +272,47 @@ void GetMarkerPoses(IplImage *image, ARCloud &cloud) {
 
   //Detect and track the markers
   if (marker_detector.Detect(image, cam, true, false, max_new_marker_error,
-			     max_track_error, CVSEQ, true))
+                             max_track_error, CVSEQ, true))
+  {
+    ROS_DEBUG_STREAM("--------------------------");
+    for (size_t i=0; i<marker_detector.markers->size(); i++)
     {
-      ROS_DEBUG_STREAM("--------------------------");
-      for (size_t i=0; i<marker_detector.markers->size(); i++)
-     	{
-	  vector<cv::Point, Eigen::aligned_allocator<cv::Point> > pixels;
-	  Marker *m = &((*marker_detector.markers)[i]);
-	  int id = m->GetId();
-	  ROS_DEBUG_STREAM("******* ID: " << id);
+      vector<cv::Point, Eigen::aligned_allocator<cv::Point> > pixels;
+      Marker *m = &((*marker_detector.markers)[i]);
+      int id = m->GetId();
+      ROS_DEBUG_STREAM("******* ID: " << id);
 
-	  int resol = m->GetRes();
-	  int ori = m->ros_orientation;
+      int resol = m->GetRes();
+      int ori = m->ros_orientation;
 
-	  PointDouble pt1, pt2, pt3, pt4;
-	  pt4 = m->ros_marker_points_img[0];
-	  pt3 = m->ros_marker_points_img[resol-1];
-	  pt1 = m->ros_marker_points_img[(resol*resol)-resol];
-	  pt2 = m->ros_marker_points_img[(resol*resol)-1];
+      PointDouble pt1, pt2, pt3, pt4;
+      pt4 = m->ros_marker_points_img[0];
+      pt3 = m->ros_marker_points_img[resol-1];
+      pt1 = m->ros_marker_points_img[(resol*resol)-resol];
+      pt2 = m->ros_marker_points_img[(resol*resol)-1];
 
-	  m->ros_corners_3D[0] = cloud(pt1.x, pt1.y);
-	  m->ros_corners_3D[1] = cloud(pt2.x, pt2.y);
-	  m->ros_corners_3D[2] = cloud(pt3.x, pt3.y);
-	  m->ros_corners_3D[3] = cloud(pt4.x, pt4.y);
+      m->ros_corners_3D[0] = cloud(pt1.x, pt1.y);
+      m->ros_corners_3D[1] = cloud(pt2.x, pt2.y);
+      m->ros_corners_3D[2] = cloud(pt3.x, pt3.y);
+      m->ros_corners_3D[3] = cloud(pt4.x, pt4.y);
 
-	  if(ori >= 0 && ori < 4){
-	    if(ori != 0){
-	      std::rotate(m->ros_corners_3D.begin(), m->ros_corners_3D.begin() + ori, m->ros_corners_3D.end());
-	    }
-	  }
-	  else
-	    ROS_ERROR("FindMarkerBundles: Bad Orientation: %i for ID: %i", ori, id);
+      if(ori >= 0 && ori < 4){
+        if(ori != 0){
+          std::rotate(m->ros_corners_3D.begin(), m->ros_corners_3D.begin() + ori, m->ros_corners_3D.end());
+        }
+      }
+      else
+        ROS_ERROR("FindMarkerBundles: Bad Orientation: %i for ID: %i", ori, id);
 
-	  //Get the 3D marker points
-	  BOOST_FOREACH (const PointDouble& p, m->ros_marker_points_img)
-	    pixels.push_back(cv::Point(p.x, p.y));
-	  ARCloud::Ptr selected_points = ata::filterCloud(cloud, pixels);
+      //Get the 3D marker points
+      BOOST_FOREACH (const PointDouble& p, m->ros_marker_points_img)
+      pixels.push_back(cv::Point(p.x, p.y));
+      ARCloud::Ptr selected_points = ata::filterCloud(cloud, pixels);
 
-	  //Use the kinect data to find a plane and pose for the marker
-	  int ret = PlaneFitPoseImprovement(i, m->ros_corners_3D, selected_points, cloud, m->pose);
-	}
+      //Use the kinect data to find a plane and pose for the marker
+      int ret = PlaneFitPoseImprovement(i, m->ros_corners_3D, selected_points, cloud, m->pose);
     }
+  }
 }
 
 
@@ -322,8 +322,10 @@ void getPointCloudCallback (const sensor_msgs::PointCloud2ConstPtr &msg)
   sensor_msgs::ImagePtr image_msg(new sensor_msgs::Image);
 
   // If desired, use the frame in the message's header.
-  if (output_frame_from_msg)
+  if (output_frame_from_msg) {
     output_frame = msg->header.frame_id;
+    output_frame_from_msg = false;
+  }
 
   //If we've already gotten the cam info, then go ahead
   if(cam->getCamInfo_){
@@ -368,103 +370,102 @@ void getPointCloudCallback (const sensor_msgs::PointCloud2ConstPtr &msg)
 
     try{
 
-
       arPoseMarkers_.markers.clear ();
       for (size_t i=0; i<marker_detector.markers->size(); i++)
-	{
-	  //Get the pose relative to the camera
-	  int id = (*(marker_detector.markers))[i].GetId();
-	  Pose p = (*(marker_detector.markers))[i].pose;
+      {
+        //Get the pose relative to the camera
+        int id = (*(marker_detector.markers))[i].GetId();
+        Pose p = (*(marker_detector.markers))[i].pose;
 
-	  double px = p.translation[0]/100.0;
-	  double py = p.translation[1]/100.0;
-	  double pz = p.translation[2]/100.0;
-	  double qx = p.quaternion[1];
-	  double qy = p.quaternion[2];
-	  double qz = p.quaternion[3];
-	  double qw = p.quaternion[0];
+        double px = p.translation[0]/100.0;
+        double py = p.translation[1]/100.0;
+        double pz = p.translation[2]/100.0;
+        double qx = p.quaternion[1];
+        double qy = p.quaternion[2];
+        double qz = p.quaternion[3];
+        double qw = p.quaternion[0];
 
-      tf::Quaternion rotation (qx,qy,qz,qw);
-      tf::Vector3 origin (px,py,pz);
-      tf::Transform t (rotation, origin);
-      tf::Vector3 markerOrigin (0, 0, 0);
-      tf::Transform m (tf::Quaternion::getIdentity (), markerOrigin);
-      tf::Transform markerPose = t * m; // marker pose in the camera frame
+        tf::Quaternion rotation (qx,qy,qz,qw);
+        tf::Vector3 origin (px,py,pz);
+        tf::Transform t (rotation, origin);
+        tf::Vector3 markerOrigin (0, 0, 0);
+        tf::Transform m (tf::Quaternion::getIdentity (), markerOrigin);
+        tf::Transform markerPose = t * m; // marker pose in the camera frame
 
-	  //Publish the transform from the camera to the marker
-	  std::string markerFrame = "ar_marker_";
-	  std::stringstream out;
-	  out << id;
-	  std::string id_string = out.str();
-	  markerFrame += id_string;
-	  tf::StampedTransform camToMarker (t, image_msg->header.stamp, image_msg->header.frame_id, markerFrame.c_str());
-	  tf_broadcaster->sendTransform(camToMarker);
+        //Publish the transform from the camera to the marker
+        std::string markerFrame = "ar_marker_";
+        std::stringstream out;
+        out << id;
+        std::string id_string = out.str();
+        markerFrame += id_string;
+        tf::StampedTransform camToMarker (t, image_msg->header.stamp, image_msg->header.frame_id, markerFrame.c_str());
+        tf_broadcaster->sendTransform(camToMarker);
 
-	  //Create the rviz visualization messages
-	  tf::poseTFToMsg (markerPose, rvizMarker_.pose);
-	  rvizMarker_.header.frame_id = image_msg->header.frame_id;
-	  rvizMarker_.header.stamp = image_msg->header.stamp;
-	  rvizMarker_.id = id;
+        //Create the rviz visualization messages
+        tf::poseTFToMsg (markerPose, rvizMarker_.pose);
+        rvizMarker_.header.frame_id = image_msg->header.frame_id;
+        rvizMarker_.header.stamp = image_msg->header.stamp;
+        rvizMarker_.id = id;
 
-	  rvizMarker_.scale.x = 1.0 * marker_size/100.0;
-	  rvizMarker_.scale.y = 1.0 * marker_size/100.0;
-	  rvizMarker_.scale.z = 0.2 * marker_size/100.0;
-	  rvizMarker_.ns = "basic_shapes";
-	  rvizMarker_.type = visualization_msgs::Marker::CUBE;
-	  rvizMarker_.action = visualization_msgs::Marker::ADD;
-	  switch (id)
-	    {
-	    case 0:
-	      rvizMarker_.color.r = 0.0f;
-	      rvizMarker_.color.g = 0.0f;
-	      rvizMarker_.color.b = 1.0f;
-	      rvizMarker_.color.a = 1.0;
-	      break;
-	    case 1:
-	      rvizMarker_.color.r = 1.0f;
-	      rvizMarker_.color.g = 0.0f;
-	      rvizMarker_.color.b = 0.0f;
-	      rvizMarker_.color.a = 1.0;
-	      break;
-	    case 2:
-	      rvizMarker_.color.r = 0.0f;
-	      rvizMarker_.color.g = 1.0f;
-	      rvizMarker_.color.b = 0.0f;
-	      rvizMarker_.color.a = 1.0;
-	      break;
-	    case 3:
-	      rvizMarker_.color.r = 0.0f;
-	      rvizMarker_.color.g = 0.5f;
-	      rvizMarker_.color.b = 0.5f;
-	      rvizMarker_.color.a = 1.0;
-	      break;
-	    case 4:
-	      rvizMarker_.color.r = 0.5f;
-	      rvizMarker_.color.g = 0.5f;
-	      rvizMarker_.color.b = 0.0;
-	      rvizMarker_.color.a = 1.0;
-	      break;
-	    default:
-	      rvizMarker_.color.r = 0.5f;
-	      rvizMarker_.color.g = 0.0f;
-	      rvizMarker_.color.b = 0.5f;
-	      rvizMarker_.color.a = 1.0;
-	      break;
-	    }
-	  rvizMarker_.lifetime = ros::Duration (1.0);
-	  rvizMarkerPub_.publish (rvizMarker_);
+        rvizMarker_.scale.x = 1.0 * marker_size/100.0;
+        rvizMarker_.scale.y = 1.0 * marker_size/100.0;
+        rvizMarker_.scale.z = 0.2 * marker_size/100.0;
+        rvizMarker_.ns = "basic_shapes";
+        rvizMarker_.type = visualization_msgs::Marker::CUBE;
+        rvizMarker_.action = visualization_msgs::Marker::ADD;
+        switch (id)
+        {
+          case 0:
+            rvizMarker_.color.r = 0.0f;
+            rvizMarker_.color.g = 0.0f;
+            rvizMarker_.color.b = 1.0f;
+            rvizMarker_.color.a = 1.0;
+            break;
+          case 1:
+            rvizMarker_.color.r = 1.0f;
+            rvizMarker_.color.g = 0.0f;
+            rvizMarker_.color.b = 0.0f;
+            rvizMarker_.color.a = 1.0;
+            break;
+          case 2:
+            rvizMarker_.color.r = 0.0f;
+            rvizMarker_.color.g = 1.0f;
+            rvizMarker_.color.b = 0.0f;
+            rvizMarker_.color.a = 1.0;
+            break;
+          case 3:
+            rvizMarker_.color.r = 0.0f;
+            rvizMarker_.color.g = 0.5f;
+            rvizMarker_.color.b = 0.5f;
+            rvizMarker_.color.a = 1.0;
+            break;
+          case 4:
+            rvizMarker_.color.r = 0.5f;
+            rvizMarker_.color.g = 0.5f;
+            rvizMarker_.color.b = 0.0;
+            rvizMarker_.color.a = 1.0;
+            break;
+          default:
+            rvizMarker_.color.r = 0.5f;
+            rvizMarker_.color.g = 0.0f;
+            rvizMarker_.color.b = 0.5f;
+            rvizMarker_.color.a = 1.0;
+            break;
+          }
+        rvizMarker_.lifetime = ros::Duration (1.0);
+        rvizMarkerPub_.publish (rvizMarker_);
 
-	  //Get the pose of the tag in the camera frame, then the output frame (usually torso)
-	  tf::Transform tagPoseOutput = CamToOutput * markerPose;
+        //Get the pose of the tag in the camera frame, then the output frame (usually torso)
+        tf::Transform tagPoseOutput = CamToOutput * markerPose;
 
-	  //Create the pose marker messages
-	  ar_track_alvar_msgs::AlvarMarker ar_pose_marker;
-	  tf::poseTFToMsg (tagPoseOutput, ar_pose_marker.pose.pose);
-	  ar_pose_marker.header.frame_id = output_frame;
-	  ar_pose_marker.header.stamp = image_msg->header.stamp;
-	  ar_pose_marker.id = id;
-	  arPoseMarkers_.markers.push_back (ar_pose_marker);
-	}
+        //Create the pose marker messages
+        ar_track_alvar_msgs::AlvarMarker ar_pose_marker;
+        tf::poseTFToMsg (tagPoseOutput, ar_pose_marker.pose.pose);
+        ar_pose_marker.header.frame_id = output_frame;
+        ar_pose_marker.header.stamp = image_msg->header.stamp;
+        ar_pose_marker.id = id;
+        arPoseMarkers_.markers.push_back (ar_pose_marker);
+      }
       arPoseMarkers_.header.stamp = image_msg->header.stamp;
       arMarkerPub_.publish (arPoseMarkers_);
     }

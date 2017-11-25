@@ -89,6 +89,7 @@ public:
 	int calib_y_res;
 	int x_res;
 	int y_res;
+	std::string frame;
 	bool getCamInfo_;
 
 protected:
