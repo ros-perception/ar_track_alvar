@@ -83,8 +83,10 @@ void getCapCallback (const sensor_msgs::ImageConstPtr & image_msg)
 {
     //If we've already gotten the cam info, then go ahead
   if (cam->getCamInfo_){
-    if (output_frame_from_msg)
+    if (output_frame_from_msg) {
       output_frame = cam->frame;
+      output_frame_from_msg = false;
+    }
     try{
       tf::StampedTransform CamToOutput;
       try{

@@ -272,7 +272,7 @@ void GetMarkerPoses(IplImage *image, ARCloud &cloud) {
 
   //Detect and track the markers
   if (marker_detector.Detect(image, cam, true, false, max_new_marker_error,
-                 max_track_error, CVSEQ, true))
+                             max_track_error, CVSEQ, true))
   {
     ROS_DEBUG_STREAM("--------------------------");
     for (size_t i=0; i<marker_detector.markers->size(); i++)
@@ -322,8 +322,10 @@ void getPointCloudCallback (const sensor_msgs::PointCloud2ConstPtr &msg)
   sensor_msgs::ImagePtr image_msg(new sensor_msgs::Image);
 
   // If desired, use the frame in the message's header.
-  if (output_frame_from_msg)
+  if (output_frame_from_msg) {
     output_frame = msg->header.frame_id;
+    output_frame_from_msg = false;
+  }
 
   //If we've already gotten the cam info, then go ahead
   if(cam->getCamInfo_){
