@@ -75,6 +75,31 @@ std::string output_frame;
 int marker_resolution = 5; // default marker resolution
 int marker_margin = 2; // default marker margin
 
+//////////////////////////////////////////////////////////////////////////
+/// \brief center of the marker in image coordinates
+/// \date 11.04.2018
+/// \author Abish
+///
+ros::Publisher arImagePub_;
+ar_track_alvar_msgs::AlvarMarkers arImageMarkers_;
+
+geometry_msgs::Pose get_image_pose(const vector <PointDouble> &img_marker)
+{
+  geometry_msgs::Pose center = geometry_msgs::Pose();
+  cv::Point2d sumPt = cv::Point2d(0, 0);
+  for (size_t i = 0; i < img_marker.size(); i++)
+  {
+    sumPt.x += img_marker.at(i).x;
+    sumPt.y += img_marker.at(i).y;
+  }
+  center.position.x = sumPt.x / 4;
+  center.position.y = sumPt.y / 4;
+
+  return center;
+}
+///
+//////////////////////////////////////////////////////////////////////////
+
 void getCapCallback (const sensor_msgs::ImageConstPtr & image_msg);
 
 
@@ -206,7 +231,25 @@ void getCapCallback (const sensor_msgs::ImageConstPtr & image_msg)
 			    ar_pose_marker.header.stamp = image_msg->header.stamp;
 			    ar_pose_marker.id = id;
 			    arPoseMarkers_.markers.push_back (ar_pose_marker);
-			}
+			    
+			    //////////////////////////////////////////////////////////////////////////
+                /// \brief center of the marker in image coordinates
+                /// \date 11.04.2018
+                /// \author Abish
+                ///
+                ar_track_alvar_msgs::AlvarMarker ar_image_marker;
+                ar_image_marker.header.frame_id = output_frame;
+                ar_image_marker.header.stamp = image_msg->header.stamp;
+                ar_image_marker.id = id;
+                ar_image_marker.pose.pose = get_image_pose((*(marker_detector.markers))[i].marker_corners_img);
+                arImageMarkers_.markers.push_back (ar_image_marker);
+            }
+            arImagePub_.publish (arImageMarkers_);
+            ///
+            //////////////////////////////////////////////////////////////////////////
+
+            //}
+			
 			arMarkerPub_.publish (arPoseMarkers_);
 		}
         catch (cv_bridge::Exception& e){
@@ -300,6 +343,15 @@ int main(int argc, char *argv[])
 	tf_broadcaster = new tf::TransformBroadcaster();
 	arMarkerPub_ = n.advertise < ar_track_alvar_msgs::AlvarMarkers > ("ar_pose_marker", 0);
 	rvizMarkerPub_ = n.advertise < visualization_msgs::Marker > ("visualization_marker", 0);
+	
+    //////////////////////////////////////////////////////////////////////////
+    /// \brief center of the marker in image coordinates
+    /// \date 11.04.2018
+    /// \author Abish
+    ///
+    arImagePub_ = n.advertise < ar_track_alvar_msgs::AlvarMarkers > ("ar_image_marker", 0);
+    ///
+    //////////////////////////////////////////////////////////////////////////
 
   // Prepare dynamic reconfiguration
   dynamic_reconfigure::Server < ar_track_alvar::ParamsConfig > server;
