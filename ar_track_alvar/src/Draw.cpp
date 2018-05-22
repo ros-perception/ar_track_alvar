@@ -92,28 +92,27 @@ void DrawCVEllipse(IplImage* image, CvBox2D& ellipse, CvScalar color, bool fill/
 	cvEllipse(image, center, cvSize(static_cast<int>(par+ellipse.size.width/2), static_cast<int>(par+ellipse.size.height/2)), -ellipse.angle, 0, 360, color, type);
 }
 
-void BuildHideTexture(IplImage *image, IplImage *hide_texture, 
-	Camera *cam, double gl_modelview[16], 
-	PointDouble topleft, PointDouble botright) 
+void BuildHideTexture(IplImage *image, IplImage *hide_texture,
+	Camera *cam, double gl_modelview[16],
+	PointDouble topleft, PointDouble botright)
 {
 	assert(image->origin == 0); // Currently only top-left origin supported
 	double kx=1.0;
 	double ky=1.0;
-	
+
 	double width = abs(botright.x - topleft.x);
 	double height = abs(botright.y - topleft.y);
-	
+
 	//GLint vp[4]; //viewport
 	//GLdouble winx[8];	// point's coordinates in windowcoordinates
-	//GLdouble winy[8];	
+	//GLdouble winy[8];
 	//GLdouble winz[8];
 	double objx;
 	double objy;
 	//GLdouble objz;
 	unsigned char pixels[8][3];
-	unsigned char color[3]={0,0,0};
 
-	int i=0,j=0,t=0;
+	int i=0,j=0;
 	double ox,oy,ya,yb,xc,xd,offset;
 	double sizex = width/4, size2x=width/2;
 	double sizey = height/4, size2y=height/2;
@@ -123,9 +122,9 @@ void BuildHideTexture(IplImage *image, IplImage *hide_texture,
 	objy = height/2*ky;
 
 	//cout<<hide_texture->width<<","<<hide_texture->height<<endl;
-	
+
 	double l2r=2*width*kx;
-	double l2s=2*height*ky;
+	//double l2s=2*height*ky; //useless
 	double lr=width*kx;
 	double ls=height*ky;
 	double r,s;
@@ -135,12 +134,12 @@ void BuildHideTexture(IplImage *image, IplImage *hide_texture,
 		offset = fmod((objx-ox), size2x);
 		if(	offset < sizex)
 			xc = objx + offset;
-		else 
+		else
 			xc = objx+size2x-offset;
 		offset = fmod((objx+ox), size2x);
 		if( offset < sizex)
 			xd = -objx - offset;
-		else 
+		else
 			xd = -objx-size2x+offset;
 		r=(ox+objx);
 		for(j=0;j<hide_texture->height;j++){
@@ -148,13 +147,13 @@ void BuildHideTexture(IplImage *image, IplImage *hide_texture,
 			offset = fmod((objy-oy), size2y);
 			if(	offset < sizey)
 				ya = objy + offset;
-			else 
-				ya = objy+size2y-offset;		 
+			else
+				ya = objy+size2y-offset;
 			offset = fmod((oy+objy), size2y);
 			if( offset < sizey)
 				yb = -objy - offset;
-			else 
-				yb = -objy-size2y+offset;		
+			else
+				yb = -objy-size2y+offset;
 			s=(oy+objy);
 
 			double points3d[4][3] = {
@@ -198,8 +197,8 @@ void BuildHideTexture(IplImage *image, IplImage *hide_texture,
 			else if ((i<4*w)|(j<4*w)|(i>hide_texture->width-4*w)|(j>hide_texture->width-4*w))
 				opaque=200;
 			else
-				opaque=255;		
-			
+				opaque=255;
+
 			cvSet2D(hide_texture, j, i, cvScalar(
 					(((lr-r)*pixels[7][0] + r*pixels[6][0]+ s* pixels[4][0] + (ls-s)* pixels[5][0])/l2r),
 					(((lr-r)*pixels[7][1] + r*pixels[6][1]+ s* pixels[4][1] + (ls-s)* pixels[5][1])/l2r),
@@ -210,16 +209,16 @@ void BuildHideTexture(IplImage *image, IplImage *hide_texture,
 	}
 }
 
-void DrawTexture(IplImage *image, IplImage *texture, 
-	Camera *cam, double gl_modelview[16], 
-	PointDouble topleft, PointDouble botright) 
+void DrawTexture(IplImage *image, IplImage *texture,
+	Camera *cam, double gl_modelview[16],
+	PointDouble topleft, PointDouble botright)
 {
 	assert(image->origin == 0); // Currently only top-left origin supported
 	double width = abs(botright.x - topleft.x);
 	double height = abs(botright.y - topleft.y);
 	double objx = width/2;
 	double objy = height/2;
-	
+
 	// Project corners
 	double points3d[4][3] = {
 		-objx, -objy, 0,
@@ -232,7 +231,7 @@ void DrawTexture(IplImage *image, IplImage *texture,
 	cvInitMatHeader(&points3d_mat, 4, 3, CV_64F, points3d);
 	cvInitMatHeader(&points2d_mat, 4, 2, CV_64F, points2d);
 	cam->ProjectPoints(&points3d_mat, gl_modelview, &points2d_mat);
-	
+
 	// Warp texture and mask using the perspective that is based on the corners
 	double map[9];
 	CvMat map_mat = cvMat(3, 3, CV_64F, map);
@@ -267,7 +266,7 @@ void DrawTexture(IplImage *image, IplImage *texture,
 	}
 	cvWarpPerspective(img, img2, &map_mat);
 	cvWarpPerspective(mask, mask2, &map_mat, 0);
-	
+
 	cvCopy(img2, image, mask2);
 
 	cvReleaseImage(&img);

@@ -65,7 +65,7 @@ catkin_package(
         dynamic_reconfigure
 )
 
-include_directories(include 
+include_directories(include
                     ${catkin_INCLUDE_DIRS}
                     ${OpenCV_INCLUDE_DIRS}
                     ${TinyXML_INCLUDE_DIRS}
@@ -77,6 +77,7 @@ set(GENCPP_DEPS ar_track_alvar_msgs_gencpp std_msgs_gencpp sensor_msgs_gencpp ge
 add_library(ar_track_alvar
     src/Camera.cpp
     src/CaptureDevice.cpp
+    src/Color.cpp
     src/Pose.cpp
     src/Marker.cpp
     src/MarkerDetector.cpp
@@ -145,6 +146,14 @@ add_executable(createMarker src/SampleMarkerCreator.cpp)
 target_link_libraries(createMarker ar_track_alvar ${catkin_LIBRARIES})
 add_dependencies(createMarker ${PROJECT_NAME}_gencpp ${GENCPP_DEPS})
 
+add_executable(createCube src/CubeCreator.cpp)
+target_link_libraries(createCube ar_track_alvar ${catkin_LIBRARIES})
+add_dependencies(createCube ${PROJECT_NAME}_gencpp ${GENCPP_DEPS})
+
+add_executable(createDeportedMarker src/DeportedMarkerCreator.cpp)
+target_link_libraries(createDeportedMarker ar_track_alvar ${catkin_LIBRARIES})
+add_dependencies(createDeportedMarker ${PROJECT_NAME}_gencpp ${GENCPP_DEPS})
+
 install(TARGETS ${ALVAR_TARGETS} ${KINECT_FILTERING_TARGETS}
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
@@ -161,12 +170,12 @@ install(DIRECTORY launch bundles
 
 if (CATKIN_ENABLE_TESTING)
   find_package(catkin REQUIRED COMPONENTS roslaunch rostest)
-  
+
   file(GLOB LAUNCH_FILES launch/*.launch test/*.test)
   foreach(LAUNCH_FILE ${LAUNCH_FILES})
     roslaunch_add_file_check(${LAUNCH_FILE} USE_TEST_DEPENDENCIES)
   endforeach()
-  
+
   catkin_download_test_data(
     ${PROJECT_NAME}_4markers_tork.bag
     http://download.ros.org/data/ar_track_alvar/ar_track_alvar_4markers_tork_2017-02-08-11-21-14.bag
