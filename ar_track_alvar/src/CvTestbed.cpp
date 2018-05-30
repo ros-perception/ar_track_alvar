@@ -125,7 +125,7 @@ bool CvTestbed::StartVideo(Capture *_cap, const char *_wintitle) {
 
 size_t CvTestbed::SetImage(const char *title, IplImage *ipl, bool release_at_exit /* =false */) {
 	size_t index = GetImageIndex(title);
-	if (index == -1) {
+	if (index == (size_t)-1) {
 		// If the title wasn't found create new
 		Image i(ipl, title, false, release_at_exit);
 		images.push_back(i);

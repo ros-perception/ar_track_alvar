@@ -120,7 +120,7 @@ void LabelingCvSeq::LabelSquares(IplImage* image, bool visualize)
         CvSeq* result = cvApproxPoly(contours, sizeof(CvContour), storage,
                                      CV_POLY_APPROX_DP, cvContourPerimeter(contours)*0.035, 0 ); // TODO: Parameters?
 
-        if( result->total == 4 && CheckBorder(result, image->width, image->height) && 
+        if( result->total == 4 && CheckBorder(result, image->width, image->height) &&
             fabs(cvContourArea(result,CV_WHOLE_SEQ)) > _min_area && // TODO check limits
             cvCheckContourConvexity(result) ) // ttehop: Changed to 'contours' instead of 'result'
         {
@@ -140,7 +140,7 @@ void LabelingCvSeq::LabelSquares(IplImage* image, bool visualize)
         blob_corners[i].resize(4);
         CvSeq* sq = (CvSeq*)cvGetSeqElem(squares, i);
         CvSeq* square_contour = (CvSeq*)cvGetSeqElem(square_contours, i);
-        
+
         for(int j = 0; j < 4; ++j)
         {
             CvPoint* pt0 = (CvPoint*)cvGetSeqElem(sq, j);
@@ -207,7 +207,7 @@ void LabelingCvSeq::LabelSquares(IplImage* image, bool visualize)
             //                   1, cvSize(3,3), cvSize(-1,-1),
             //                   cvTermCriteria(
             //                   CV_TERMCRIT_ITER+CV_TERMCRIT_EPS,10,1e-4));
-            
+
             // TODO: Now there is a wierd systematic 0.5 pixel error that is fixed here...
             //intc.x += 0.5;
             //intc.y += 0.5;
@@ -264,7 +264,7 @@ CvSeq* LabelingCvSeq::LabelImage(IplImage* image, int min_size, bool approx)
 	cvAdaptiveThreshold(gray, bw, 255, CV_ADAPTIVE_THRESH_MEAN_C, CV_THRESH_BINARY_INV, thresh_param1, thresh_param2);
 
 	CvSeq* contours;
-	CvSeq* edges = cvCreateSeq(0, sizeof(CvSeq), sizeof(CvSeq), storage);
+	//CvSeq* edges = cvCreateSeq(0, sizeof(CvSeq), sizeof(CvSeq), storage); //useless
 	CvSeq* squares = cvCreateSeq(0, sizeof(CvSeq), sizeof(CvSeq), storage);
 
 	cvFindContours(bw, storage, &contours, sizeof(CvContour),
@@ -280,7 +280,7 @@ CvSeq* LabelingCvSeq::LabelImage(IplImage* image, int min_size, bool approx)
 			contours = contours->h_next;
 			continue;
 		}
-		
+
 		if(approx)
 		{
 			CvSeq* result = cvApproxPoly(contours, sizeof(CvContour), storage,
@@ -290,10 +290,10 @@ CvSeq* LabelingCvSeq::LabelImage(IplImage* image, int min_size, bool approx)
 			{
 					cvSeqPush(squares, result);
 			}
-		}	
+		}
 		else
 			cvSeqPush(squares, contours);
-	
+
 		contours = contours->h_next;
 	}
 

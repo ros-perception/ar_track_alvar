@@ -105,7 +105,7 @@ bool MultiMarker::SaveText(const char* fname) {
 		{
 			CvPoint3D64f X = pointcloud[pointcloud_index(marker_indices[i], j)];
 			file_op<<X.x<<" "<<X.y<<" "<<X.z<<endl;
-			
+
 		}
 	file_op.close();
 
@@ -236,10 +236,9 @@ void MultiMarker::PointCloudCorners3d(double edge_length, Pose &pose, CvPoint3D6
 		// TODO: This should be exactly the same as in Marker class.
 		//       Should we get the values from there somehow?
 		double X_data[4] = {0, 0, 0, 1};
-		if (j == 0) { 
-			int zzzz=2;			
-			//X_data[0] = -0.5*edge_length;
-			//X_data[1] = -0.5*edge_length;
+		if (j == 0) {
+			X_data[0] = -0.5*edge_length;
+			X_data[1] = -0.5*edge_length;
 		} else if (j == 1) {
 			X_data[0] = +0.5*edge_length;
 			X_data[1] = -0.5*edge_length;
@@ -268,6 +267,50 @@ void MultiMarker::PointCloudAdd(int marker_id, double edge_length, Pose &pose) {
 		pointcloud[pointcloud_index(marker_id, j, true)] = corners[j];
 		marker_status[get_id_index(marker_id, true)]=1;
 	}
+}
+
+void MultiMarker::PointCloudTranslate(int marker_id, double x, double y, double z)
+{
+	for(size_t j = 0; j < 4; ++j)
+	{
+		pointcloud[pointcloud_index(marker_id, j)].x += x;
+		pointcloud[pointcloud_index(marker_id, j)].y += y;
+		pointcloud[pointcloud_index(marker_id, j)].z += z;
+	}
+}
+
+void MultiMarker::PointCloudRotate(int marker_id, int rot[9])
+{
+	std::map<int, CvPoint3D64f> tmp_pointcloud = pointcloud;
+	for(int src = 0; src < 3; src++)
+		for(int dest = 0; dest < 3; dest++)
+		{
+			int weight = rot[src*3 + dest];
+			if(weight != 0)
+			{
+				double tmp[4];
+				for(size_t j = 0; j < 4; ++j)
+				{
+					if(src == 0)
+						tmp[j] = pointcloud[pointcloud_index(marker_id, j)].x;
+					else if(src == 1)
+						tmp[j] = pointcloud[pointcloud_index(marker_id, j)].y;
+					else if(src == 2)
+						tmp[j] = pointcloud[pointcloud_index(marker_id, j)].z;
+				}
+				for(size_t j = 0; j < 4; ++j)
+				{
+					if(dest == 0)
+						tmp_pointcloud[pointcloud_index(marker_id, j)].x = weight*tmp[j];
+					else if(dest == 1)
+						tmp_pointcloud[pointcloud_index(marker_id, j)].y = weight*tmp[j];
+					else if(dest == 2)
+						tmp_pointcloud[pointcloud_index(marker_id, j)].z = weight*tmp[j];
+				}
+			}
+		}
+
+	pointcloud = tmp_pointcloud;
 }
 
 void MultiMarker::PointCloudCopy(const MultiMarker *m) {

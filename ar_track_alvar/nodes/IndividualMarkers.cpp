@@ -124,7 +124,7 @@ void draw3dPoints(ARCloud::Ptr cloud, string frame, int color, int id, double ra
   }
 
   gm::Point p;
-  for(int i=0; i<cloud->points.size(); i++){
+  for(size_t i=0; i<cloud->points.size(); i++){
     p.x = cloud->points[i].x;
     p.y = cloud->points[i].y;
     p.z = cloud->points[i].z;
@@ -152,7 +152,7 @@ void drawArrow(gm::Point start, tf::Matrix3x3 mat, string frame, int color, int 
   rvizMarker.type = visualization_msgs::Marker::ARROW;
   rvizMarker.action = visualization_msgs::Marker::ADD;
 
-  for(int i=0; i<3; i++){
+  for(size_t i=0; i<3; i++){
     rvizMarker.points.clear();
     rvizMarker.points.push_back(start);
     gm::Point end;
@@ -277,41 +277,41 @@ void GetMarkerPoses(IplImage *image, ARCloud &cloud) {
       ROS_DEBUG_STREAM("--------------------------");
       for (size_t i=0; i<marker_detector.markers->size(); i++)
      	{
-	  vector<cv::Point, Eigen::aligned_allocator<cv::Point> > pixels;
-	  Marker *m = &((*marker_detector.markers)[i]);
-	  int id = m->GetId();
-	  ROS_DEBUG_STREAM("******* ID: " << id);
+    	  vector<cv::Point, Eigen::aligned_allocator<cv::Point> > pixels;
+    	  Marker *m = &((*marker_detector.markers)[i]);
+    	  int id = m->GetId();
+    	  ROS_DEBUG_STREAM("******* ID: " << id);
 
-	  int resol = m->GetRes();
-	  int ori = m->ros_orientation;
+    	  int resol = m->GetRes();
+    	  int ori = m->ros_orientation;
 
-	  PointDouble pt1, pt2, pt3, pt4;
-	  pt4 = m->ros_marker_points_img[0];
-	  pt3 = m->ros_marker_points_img[resol-1];
-	  pt1 = m->ros_marker_points_img[(resol*resol)-resol];
-	  pt2 = m->ros_marker_points_img[(resol*resol)-1];
+    	  PointDouble pt1, pt2, pt3, pt4;
+    	  pt4 = m->ros_marker_points_img[0];
+    	  pt3 = m->ros_marker_points_img[resol-1];
+    	  pt1 = m->ros_marker_points_img[(resol*resol)-resol];
+    	  pt2 = m->ros_marker_points_img[(resol*resol)-1];
 
-	  m->ros_corners_3D[0] = cloud(pt1.x, pt1.y);
-	  m->ros_corners_3D[1] = cloud(pt2.x, pt2.y);
-	  m->ros_corners_3D[2] = cloud(pt3.x, pt3.y);
-	  m->ros_corners_3D[3] = cloud(pt4.x, pt4.y);
+    	  m->ros_corners_3D[0] = cloud(pt1.x, pt1.y);
+    	  m->ros_corners_3D[1] = cloud(pt2.x, pt2.y);
+    	  m->ros_corners_3D[2] = cloud(pt3.x, pt3.y);
+    	  m->ros_corners_3D[3] = cloud(pt4.x, pt4.y);
 
-	  if(ori >= 0 && ori < 4){
-	    if(ori != 0){
-	      std::rotate(m->ros_corners_3D.begin(), m->ros_corners_3D.begin() + ori, m->ros_corners_3D.end());
-	    }
-	  }
-	  else
-	    ROS_ERROR("FindMarkerBundles: Bad Orientation: %i for ID: %i", ori, id);
+    	  if(ori >= 0 && ori < 4){
+    	    if(ori != 0){
+    	      std::rotate(m->ros_corners_3D.begin(), m->ros_corners_3D.begin() + ori, m->ros_corners_3D.end());
+    	    }
+    	  }
+    	  else
+    	    ROS_ERROR("FindMarkerBundles: Bad Orientation: %i for ID: %i", ori, id);
 
-	  //Get the 3D marker points
-	  BOOST_FOREACH (const PointDouble& p, m->ros_marker_points_img)
-	    pixels.push_back(cv::Point(p.x, p.y));
-	  ARCloud::Ptr selected_points = ata::filterCloud(cloud, pixels);
+    	  //Get the 3D marker points
+    	  BOOST_FOREACH (const PointDouble& p, m->ros_marker_points_img)
+    	    pixels.push_back(cv::Point(p.x, p.y));
+    	  ARCloud::Ptr selected_points = ata::filterCloud(cloud, pixels);
 
-	  //Use the kinect data to find a plane and pose for the marker
-	  int ret = PlaneFitPoseImprovement(i, m->ros_corners_3D, selected_points, cloud, m->pose);
-	}
+    	  //Use the kinect data to find a plane and pose for the marker
+    	  int ret = PlaneFitPoseImprovement(i, m->ros_corners_3D, selected_points, cloud, m->pose);
+    	}
     }
 }
 

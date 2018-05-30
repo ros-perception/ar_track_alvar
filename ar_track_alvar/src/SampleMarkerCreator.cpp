@@ -23,7 +23,7 @@ struct State {
     MarkerData::MarkerContentType marker_data_content_type;
     bool                          marker_data_force_strong_hamming;
 
-    State() 
+    State()
         : img(0),
           prompt(false),
           units(96.0/2.54),      // cm assuming 96 dpi
@@ -67,8 +67,8 @@ struct State {
                 cvCopy(img, new_img);
                 cvReleaseImage(&img);
                 img = new_img;
-                roi.x = int((posx*units) - (marker_side_len*units/2.0) - new_minx + 0.5); 
-                roi.y = int((posy*units) - (marker_side_len*units/2.0) - new_miny + 0.5); 
+                roi.x = int((posx*units) - (marker_side_len*units/2.0) - new_minx + 0.5);
+                roi.y = int((posy*units) - (marker_side_len*units/2.0) - new_miny + 0.5);
                 roi.width = int(marker_side_len*units+0.5); roi.height = int(marker_side_len*units+0.5);
                 cvSetImageROI(img, roi);
                 minx = new_minx; miny = new_miny;
@@ -131,13 +131,13 @@ int main(int argc, char *argv[])
     try {
         if (argc < 2) st.prompt = true;
         for (int i=1; i<argc; i++) {
-            if (strcmp(argv[i],"-f") == 0) 
+            if (strcmp(argv[i],"-f") == 0)
                 st.marker_data_force_strong_hamming=true;
-            else if (strcmp(argv[i],"-1") == 0) 
+            else if (strcmp(argv[i],"-1") == 0)
                 st.marker_data_content_type = MarkerData::MARKER_CONTENT_TYPE_STRING;
-            else if (strcmp(argv[i],"-2") == 0) 
+            else if (strcmp(argv[i],"-2") == 0)
                 st.marker_data_content_type = MarkerData::MARKER_CONTENT_TYPE_FILE;
-            else if (strcmp(argv[i],"-3") == 0) 
+            else if (strcmp(argv[i],"-3") == 0)
                 st.marker_data_content_type = MarkerData::MARKER_CONTENT_TYPE_HTTP;
             else if (strcmp(argv[i],"-u") == 0)
                 st.units = atof(argv[++i]);
