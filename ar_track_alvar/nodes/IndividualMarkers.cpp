@@ -391,6 +391,10 @@ void getPointCloudCallback (const sensor_msgs::PointCloud2ConstPtr &msg)
       tf::Transform m (tf::Quaternion::getIdentity (), markerOrigin);
       tf::Transform markerPose = t * m; // marker pose in the camera frame
 
+      tf::Vector3 z_axis_cam = tf::Transform(rotation, tf::Vector3(0,0,0)) * tf::Vector3(0, 0, 1);
+      /// as we can't see through markers, this one is false positive detection
+      if (z_axis_cam.z() > 0) continue;
+
 	  //Publish the transform from the camera to the marker
 	  std::string markerFrame = "ar_marker_";
 	  std::stringstream out;
