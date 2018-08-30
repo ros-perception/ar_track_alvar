@@ -512,6 +512,10 @@ void Marker::SetMarkerSize(double _edge_length, int _res, double _margin) {
 	marker_content = cvCreateMat(res, res, CV_8U);
 	cvSet(marker_content, cvScalar(255));
 }
+int Marker::GetMarkerRes(void){
+	return res;
+}
+
 Marker::~Marker() {
 	if (marker_content) cvReleaseMat(&marker_content);
 }
@@ -838,7 +842,7 @@ void MarkerData::Read6bitStr(BitsetExt *bs, char *s, size_t s_max_len) {
 		if (bitpos < 0) {
 			if (c == 000)                      s[len] = ':';
 			else if ((c >= 001) && (c <= 032)) s[len] = 'a' + (char)c - 1;
-			else if ((c >= 033) && (c <= 044)) s[len] = '0' + (char)c - 1;
+			else if ((c >= 033) && (c <= 044)) s[len] = '0' + (char)c - 033;
 			else if (c == 045)                 s[len] = '+';
 			else if (c == 046)                 s[len] = '-';
 			else if (c == 047)                 s[len] = '*';

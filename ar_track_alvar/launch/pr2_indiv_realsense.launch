@@ -1,14 +1,16 @@
 <launch>
 	<arg name="inverse_tf" default="false" />
-	<arg name="marker_size" default="4.4" />
+	<arg name="marker_size" default="20.0" />
 	<arg name="max_new_marker_error" default="0.08" />
 	<arg name="max_track_error" default="0.2" />
+	<arg name="marker_resolution" default="11" />
 
-	<arg name="cam_image_topic" default="/kinect_head/depth_registered/points" />
-	<arg name="cam_info_topic" default="/kinect_head/rgb/camera_info" />
-	<arg name="output_frame" default="/torso_lift_link" />
+	<arg name="cam_image_topic" default="camera/depth/points" />
+	<arg name="cam_info_topic" default="camera/color/camera_info" />
+	<arg name="output_frame" default="/camera_link" />
 
 	<node name="ar_track_alvar" pkg="ar_track_alvar" type="individualMarkers" respawn="false" output="screen">
+		<param name="marker_resolution"     type="int"    value="$(arg marker_resolution)" />
 		<param name="marker_size"           type="double" value="$(arg marker_size)" />
 		<param name="max_new_marker_error"  type="double" value="$(arg max_new_marker_error)" />
 		<param name="max_track_error"       type="double" value="$(arg max_track_error)" />
