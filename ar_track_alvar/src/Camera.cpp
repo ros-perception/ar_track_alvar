@@ -259,11 +259,11 @@ void Camera::SetCameraInfo(const sensor_msgs::CameraInfo &camInfo)
 
 void Camera::camInfoCallback (const sensor_msgs::CameraInfoConstPtr & cam_info)
   {
-    if (!getCamInfo_)
+//    if (!getCamInfo_)
     {
         SetCameraInfo(*cam_info);
         getCamInfo_ = true;
-        sub_.shutdown();
+//        sub_.shutdown();
     }
   }
 
