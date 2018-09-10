@@ -9,3 +9,9 @@
 *~
 src/ar_track_alvar
 *.user
+*.swp
+GPATH
+GRTAGS
+GTAGS
+GSYMS
+

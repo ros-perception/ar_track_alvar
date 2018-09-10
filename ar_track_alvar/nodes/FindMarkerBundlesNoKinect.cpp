@@ -82,6 +82,8 @@ void GetMultiMarkerPoses(IplImage *image);
 void getCapCallback (const sensor_msgs::ImageConstPtr & image_msg);
 void makeMarkerMsgs(int type, int id, Pose &p, sensor_msgs::ImageConstPtr image_msg, tf::StampedTransform &CamToOutput, visualization_msgs::Marker *rvizMarker, ar_track_alvar_msgs::AlvarMarker *ar_pose_marker);
 
+bool inverse_tf = false;
+
 
 // Updates the bundlePoses of the multi_marker_bundles by detecting markers and using all markers in a bundle to infer the master tag's position
 void GetMultiMarkerPoses(IplImage *image) {
@@ -128,8 +130,14 @@ void makeMarkerMsgs(int type, int id, Pose &p, sensor_msgs::ImageConstPtr image_
     out << id;
     std::string id_string = out.str();
     markerFrame += id_string;
-    tf::StampedTransform camToMarker (t, image_msg->header.stamp, image_msg->header.frame_id, markerFrame.c_str());
-    tf_broadcaster->sendTransform(camToMarker);
+    if (inverse_tf) {
+      tf::StampedTransform markerToCam (t.inverse(), image_msg->header.stamp, markerFrame.c_str(), output_frame);
+      tf_broadcaster->sendTransform(markerToCam);
+    } else {
+      tf::StampedTransform camToMarker (t, image_msg->header.stamp, image_msg->header.frame_id, markerFrame.c_str());
+      tf_broadcaster->sendTransform(camToMarker);
+    }
+
   }
 
   //Create the rviz visualization message
@@ -281,10 +289,10 @@ int main(int argc, char *argv[])
   ros::init (argc, argv, "marker_detect");
   ros::NodeHandle n;
 
-  if(argc < 8){
+  if(argc < 9){
     std::cout << std::endl;
     cout << "Not enough arguments provided." << endl;
-    cout << "Usage: ./findMarkerBundles <marker size in cm> <max new marker error> <max track error> <cam image topic> <cam info topic> <output frame> <list of bundle XML files...>" << endl;
+    cout << "Usage: ./findMarkerBundles <marker size in cm> <max new marker error> <max track error> <cam image topic> <cam info topic> <output frame> <inverse tf or not (true or false)> <list of bundle XML files...>" << endl;
     std::cout << std::endl;
     return 0;
   }
@@ -296,7 +304,12 @@ int main(int argc, char *argv[])
   cam_image_topic = argv[4];
   cam_info_topic = argv[5];
   output_frame = argv[6];
-  int n_args_before_list = 7;
+  std::stringstream tmpss(argv[7]);
+  if(!(tmpss >> std::boolalpha >> inverse_tf)) {
+    // parse failed
+    inverse_tf = false;
+  }
+  int n_args_before_list = 8;
   n_bundles = argc - n_args_before_list;
 
   marker_detector.SetMarkerSize(marker_size);
