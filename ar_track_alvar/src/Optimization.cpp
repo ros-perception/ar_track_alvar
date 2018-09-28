@@ -37,7 +37,7 @@ Optimization::Optimization(int n_params, int n_meas)
 	J       = cvCreateMat(n_meas,   n_params, CV_64F); cvZero(J);
 	JtJ     = cvCreateMat(n_params, n_params, CV_64F); cvZero(JtJ);
 	tmp     = cvCreateMat(n_params, n_meas,   CV_64F); cvZero(tmp);
-	W       = cvCreateMat(n_meas,   n_meas,   CV_64F); cvZero(W); 
+	W       = cvCreateMat(n_meas,   n_meas,   CV_64F); cvZero(W);
 	diag    = cvCreateMat(n_params, n_params, CV_64F); cvZero(diag);
 	err     = cvCreateMat(n_meas,   1, CV_64F); cvZero(err);
 	delta   = cvCreateMat(n_params, 1, CV_64F); cvZero(delta);
@@ -77,19 +77,18 @@ double Optimization::CalcTukeyWeight(double residual, double c)
 	}
 	else
 		ret = (c*c)/6.0;
-	
+
 	if(residual)
 		ret = fabs(sqrt(ret)/residual);
 	else
 		ret = 1.0; // ???
-	
+
 	return ret;
 }
 
 double Optimization::CalcTukeyWeightSimple(double residual, double c)
 {
 	//const double c = 3;
-	double ret=0;
 
 	double x2 = residual*residual;
 	if(x2<c*c) return residual;
@@ -106,7 +105,7 @@ void Optimization::CalcJacobian(CvMat* x, CvMat* J, EstimateCallback Estimate)
 		CvMat J_column;
 		cvGetCol(J, &J_column, i);
 
-		cvZero(delta); 
+		cvZero(delta);
 		cvmSet(delta, i, 0, step);
 		cvAdd(x, delta, x_plus);
 		cvmSet(delta, i, 0, -step);
@@ -132,8 +131,6 @@ double Optimization::Optimize(CvMat* parameters,      // Initial values are set
 							  CvMat* weights)
 {
 
-	int n_params = parameters->rows;
-	int n_meas   = measurements->rows;
 	double error_new = 0;
 	double error_old = 0;
 	double n1, n2;
@@ -182,7 +179,7 @@ double Optimization::Optimize(CvMat* parameters,      // Initial values are set
 
 				if( ((n1/n2) < stop) ||
 					(cntr >= max_iter) )
-					goto end; 
+					goto end;
 
 			break;
 
@@ -208,10 +205,10 @@ double Optimization::Optimize(CvMat* parameters,      // Initial values are set
 				cvAdd(JtJ, diag, JtJ);
 				cvInv(JtJ, JtJ, CV_SVD);
 				cvGEMM(JtJ, J, 1.0, 0, 0, tmp, CV_GEMM_B_T);
-				
+
 				if(weights)
 					cvGEMM(tmp, W, 1, 0, 0, tmp, 0);
-				
+
 				cvMatMul(tmp, err, delta);
 				cvAdd(delta, parameters, tmp_par);
 
@@ -219,7 +216,7 @@ double Optimization::Optimize(CvMat* parameters,      // Initial values are set
 				cvSub(measurements, x_tmp1, err);
 
 				error_new = cvNorm(err, 0, CV_L2);
-			
+
 				if(error_new < error_old)
 				{
 					cvCopy(tmp_par, parameters);
@@ -244,7 +241,7 @@ double Optimization::Optimize(CvMat* parameters,      // Initial values are set
 			break;
 
 			case (TUKEY_LM) :
-							
+
 				cvSetIdentity(diag, cvRealScalar(lambda));
 
 				// Tukey weights
@@ -272,7 +269,7 @@ double Optimization::Optimize(CvMat* parameters,      // Initial values are set
 				cvSub(measurements, x_tmp1, err);
 
 				error_new = cvNorm(err, 0, CV_L2);
-				
+
 				if(error_new < error_old)
 				{
 					cvCopy(tmp_par, parameters);
@@ -293,7 +290,7 @@ double Optimization::Optimize(CvMat* parameters,      // Initial values are set
 				{
 					goto end;
 				}
-	
+
 			break;
 		}
 		++cntr;
