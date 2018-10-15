@@ -1,0 +1,7 @@
+<launch>
+  <!-- This test assumes 4markers_tork.bag is being played. -->
+  <!-- This test uses parameter for config. -->
+  <arg name="start_node_withparam" default="true" />
+  <arg name="suffix_testname" default="WITHPARAM_CONFIGFULL" />
+  <include file="$(find ar_track_alvar)/test/marker_abstract.launch.xml" pass_all_args="true" />
+</launch>

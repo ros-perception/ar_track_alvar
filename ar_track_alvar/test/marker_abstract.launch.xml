@@ -1,0 +1,33 @@
+<launch>
+  <!-- This test assumes 4markers_tork.bag is being played. -->
+  <arg name="marker_size" default="2.3" />
+  <arg name="max_new_marker_error" default="0.08" />
+  <arg name="max_track_error" default="0.2" />
+  <arg name="max_frequency" default="100" />
+  <arg name="marker_resolution" default="5" />
+  <arg name="marker_margin" default="2" />
+  <arg name="cam_image_topic" default="/camera/image_raw" />
+  <arg name="cam_info_topic" default="/camera/camera_info" />	
+  <arg name="output_frame" default="/camera" />
+
+  <arg name="config_full" default="true" />
+  <arg name="play_bag" default="true" />
+  <arg name="rosnode_type" default="individualMarkersNoKinect" />
+  <arg name="start_node_withparam" default="true" />
+  <arg name="suffix_testname" default="WITH_PARAM" />
+
+  <include file="$(find ar_track_alvar)/test/test_markerdetect.launch.xml" pass_all_args="true" />
+    
+  <!-- If 1 or more ar_pose_marker topic is published, that means the marker detection is functioning. -->
+  <arg name='TESTNAME_MARKER_DETECTION' value='marker_recog_hz_$(arg suffix_testname)' />
+  <arg name='TESTDURATION' value='7' />
+  <test pkg="rostest" type="hztest" test-name="$(arg TESTNAME_MARKER_DETECTION)" name="$(arg TESTNAME_MARKER_DETECTION)" time-limit="$(arg TESTDURATION)" retry="3">
+    <param name="topic" value="ar_pose_marker" />
+    <param name="hz" value="1.0" />
+    <param name="hzerror" value="50.00" />
+    <param name="test_duration" value="$(arg TESTDURATION)" />
+    <param name="wait_time" value="$(arg TESTDURATION)" />  <!-- Time for downloading may need to be included in this. -->
+  </test>
+
+  <test pkg="ar_track_alvar" type="test_ar.py" test-name="marker_quarternions_$(arg suffix_testname)" name="marker_quarternions_$(arg suffix_testname)" time-limit="$(arg TESTDURATION)" retry="10" />  
+</launch>

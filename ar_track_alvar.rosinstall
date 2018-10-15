@@ -1,0 +1,2 @@
+- git: {local-name: ar_track_alvar_metapkg, uri: 'https://github.com/sniekum/ar_track_alvar.git', version: indigo-devel}
+

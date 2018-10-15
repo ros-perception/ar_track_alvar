@@ -1,0 +1,49 @@
+<launch>
+  <!-- This test assumes 4markers_tork.bag is being played. -->
+  <arg name="cam_image_topic" default="/camera/image_raw" />
+  <arg name="cam_info_topic" default="/camera/camera_info" />	
+  <arg name="marker_margin" default="2" />
+  <arg name="marker_resolution" default="5" />
+  <arg name="marker_size" default="2.3" />
+  <arg name="max_new_marker_error" default="0.08" />
+  <arg name="max_frequency" default="100" />
+  <arg name="max_track_error" default="0.2" />
+  <arg name="output_frame" default="/camera" />
+
+  <arg name="config_full" default="true" />
+  <arg name="rosnode_type" default="individualMarkers" />
+  <arg name="rosnode_runtime_name" default="ar_rosnode_$(arg rosnode_type)" />
+  <arg name="play_bag" default="true" />
+  <arg name="start_node_withparam" default="false" />
+  <arg name="suffix_testname" default="WITH_PARAM" />  <!-- Not used in this launch but still defined in order only to allow client launch files to use a convenient 'pass_all_args' arg. -->
+
+  <group if="$(arg play_bag)">
+    <param name="use_sim_time" value="true" />
+    <node pkg="rosbag" type="play" name="playing_bag" args="--clock -l $(find ar_track_alvar)/test/ar_track_alvar_4markers_tork_2017-02-08-11-21-14.bag" />
+  </group>
+
+  <group if="$(arg start_node_withparam)">
+    <node pkg="ar_track_alvar" type="$(arg rosnode_type)" name="$(arg rosnode_runtime_name)" respawn="false" output="screen" args="">
+      <param name="marker_size"           type="double" value="$(arg marker_size)" />
+      <param name="max_new_marker_error"  type="double" value="$(arg max_new_marker_error)" />
+      <param name="max_track_error"       type="double" value="$(arg max_track_error)" />
+      <param name="output_frame"          type="string" value="$(arg output_frame)" />
+      <!-- Only when config_full is NOT set. -->
+      <param name="max_frequency"         type="double" value="$(arg max_frequency)" if="$(arg config_full)" />
+      <param name="marker_resolution"     type="double" value="$(arg marker_resolution)" if="$(arg config_full)" />
+      <param name="marker_margin"         type="double" value="$(arg marker_margin)" if="$(arg config_full)" />
+
+      <remap from="camera_image"  to="$(arg cam_image_topic)" />
+      <remap from="camera_info"   to="$(arg cam_info_topic)" />
+    </node>
+  </group>
+  <group unless="$(arg start_node_withparam)">
+    <group if="$(arg config_full)">
+      <node pkg="ar_track_alvar" type="$(arg rosnode_type)" name="$(arg rosnode_runtime_name)" respawn="false" output="screen" args="$(arg marker_size) $(arg max_new_marker_error) $(arg max_track_error) $(arg cam_image_topic) $(arg cam_info_topic) $(arg output_frame) $(arg max_frequency) $(arg marker_resolution) $(arg marker_margin)" />
+    </group>
+    <group unless="$(arg config_full)">
+      <node pkg="ar_track_alvar" type="$(arg rosnode_type)" name="$(arg rosnode_runtime_name)" respawn="false" output="screen" args="$(arg marker_size) $(arg max_new_marker_error) $(arg max_track_error) $(arg cam_image_topic) $(arg cam_info_topic) $(arg output_frame)" />
+    </group>
+  </group>
+
+</launch>

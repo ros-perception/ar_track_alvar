@@ -1,0 +1,7 @@
+<launch>
+  <!-- This test assumes 4markers_tork.bag is being played. -->
+  <!-- This test uses commandline argument for config, which is deprecated after 0.5.6 (Indigo, Jade), 0.6.3 (Kinetic) -->
+  <arg name="start_node_withparam" default="false" />
+  <arg name="suffix_testname" default="WITHARG_CONFIGFULL" />
+  <include file="$(find ar_track_alvar)/test/marker_abstract.launch.xml" pass_all_args="true" />
+</launch>
