@@ -222,6 +222,13 @@ void configCallback(ar_track_alvar::ParamsConfig &config, uint32_t level)
 
   enableSwitched = enabled != config.enabled;
 
+  if (config.marker_size != marker_size)
+  {
+    marker_detector.SetMarkerSize(config.marker_size, marker_resolution, marker_margin);
+    marker_detector.TrackMarkersReset();
+    marker_detector.markers->clear();
+  }
+
   enabled = config.enabled;
   max_frequency = config.max_frequency;
   marker_size = config.marker_size;
