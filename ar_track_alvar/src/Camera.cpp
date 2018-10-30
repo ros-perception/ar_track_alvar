@@ -258,14 +258,10 @@ void Camera::SetCameraInfo(const sensor_msgs::CameraInfo &camInfo)
 }
 
 void Camera::camInfoCallback (const sensor_msgs::CameraInfoConstPtr & cam_info)
-  {
-    if (!getCamInfo_)
-    {
-        SetCameraInfo(*cam_info);
-        getCamInfo_ = true;
-        sub_.shutdown();
-    }
-  }
+{
+    SetCameraInfo(*cam_info);
+    getCamInfo_ = true;
+}
 
 bool Camera::SetCalib(const char *calibfile, int _x_res, int _y_res, FILE_FORMAT format) {
 	x_res = _x_res;
