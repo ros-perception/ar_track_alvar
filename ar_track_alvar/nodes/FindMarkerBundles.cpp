@@ -33,39 +33,32 @@
 
   author: Scott Niekum
 */
-#include "ar_track_alvar/CvTestbed.h"
 #include "ar_track_alvar/MarkerDetector.h"
 #include "ar_track_alvar/MultiMarkerBundle.h"
 #include "ar_track_alvar/MultiMarkerInitializer.h"
-#include "ar_track_alvar/Shared.h"
 #include <cv_bridge/cv_bridge.h>
 #include <ar_track_alvar_msgs/AlvarMarker.h>
 #include <ar_track_alvar_msgs/AlvarMarkers.h>
 #include <tf/transform_listener.h>
 #include <tf/transform_broadcaster.h>
+#include <std_msgs/Bool.h>
 
 #include <sensor_msgs/PointCloud2.h>
 #include <pcl_conversions/pcl_conversions.h>
 #include <pcl/point_types.h>
-#include <pcl/registration/icp.h>
-#include <pcl/registration/registration.h>
 
 #include <geometry_msgs/PoseStamped.h>
 #include <sensor_msgs/image_encodings.h>
 #include <ros/ros.h>
-#include <pcl/ModelCoefficients.h>
-#include <pcl/point_types.h>
-#include <pcl/sample_consensus/method_types.h>
-#include <pcl/sample_consensus/model_types.h>
 #include <pcl/segmentation/sac_segmentation.h>
-#include <pcl_ros/point_cloud.h>
-#include <pcl/filters/extract_indices.h>
-#include <boost/lexical_cast.hpp>
 
 #include <tf/tf.h>
 #include <Eigen/Core>
+#include <utility>
 #include <ar_track_alvar/filter/kinect_filtering.h>
 #include <ar_track_alvar/filter/medianFilter.h>
+#include <dynamic_reconfigure/server.h>
+#include <ar_track_alvar/ParamsConfig.h>
 
 
 #define MAIN_MARKER 1
@@ -93,42 +86,47 @@ ar_track_alvar_msgs::AlvarMarkers arPoseMarkers_;
 tf::TransformListener *tf_listener;
 tf::TransformBroadcaster *tf_broadcaster;
 MarkerDetector<MarkerData> marker_detector;
-MultiMarkerBundle **multi_marker_bundles=NULL;
+MultiMarkerBundle **multi_marker_bundles=nullptr;
 
 Pose *bundlePoses;
 int *master_id;
 int *bundles_seen;
 bool *master_visible;
-std::vector<int> *bundle_indices; 	
+std::vector<int> *bundle_indices;
 bool init = true;
 ata::MedianFilter **med_filts;
 int med_filt_size;
 
+bool enable_switched = false;
+bool enabled = true;
 double marker_size;
 double max_new_marker_error;
 double max_track_error;
-std::string cam_image_topic; 
-std::string cam_info_topic; 
+std::string cam_image_topic;
+std::string cam_info_topic;
 std::string output_frame;
-int n_bundles = 0;   
+double max_frequency = 8.0; // default maximum frequency
+int marker_resolution = 5; // default marker resolution
+int marker_margin = 2; // default marker margin
+int n_bundles = 0;
 
 //Debugging utility function
-void draw3dPoints(ARCloud::Ptr cloud, string frame, int color, int id, double rad)
+void draw3dPoints(const ARCloud::Ptr& cloud, const string &frame, int color, int id, double rad)
 {
   visualization_msgs::Marker rvizMarker;
 
   rvizMarker.header.frame_id = frame;
-  rvizMarker.header.stamp = ros::Time::now(); 
+  rvizMarker.header.stamp = ros::Time::now();
   rvizMarker.id = id;
   rvizMarker.ns = "3dpts";
-  
+
   rvizMarker.scale.x = rad;
   rvizMarker.scale.y = rad;
   rvizMarker.scale.z = rad;
-  
+
   rvizMarker.type = visualization_msgs::Marker::SPHERE_LIST;
   rvizMarker.action = visualization_msgs::Marker::ADD;
-  
+
   if(color==1){
     rvizMarker.color.r = 0.0f;
     rvizMarker.color.g = 1.0f;
@@ -147,38 +145,38 @@ void draw3dPoints(ARCloud::Ptr cloud, string frame, int color, int id, double ra
     rvizMarker.color.b = 0.0f;
     rvizMarker.color.a = 1.0;
   }
-  
+
   gm::Point p;
-  for(int i=0; i<cloud->points.size(); i++){
-    p.x = cloud->points[i].x;
-    p.y = cloud->points[i].y;
-    p.z = cloud->points[i].z;
+  for(auto & point : cloud->points){
+    p.x = point.x;
+    p.y = point.y;
+    p.z = point.z;
     rvizMarker.points.push_back(p);
   }
-  
+
   rvizMarker.lifetime = ros::Duration (1.0);
   rvizMarkerPub2_.publish (rvizMarker);
 }
 
 
-void drawArrow(gm::Point start, tf::Matrix3x3 mat, string frame, int color, int id)
+void drawArrow(const gm::Point &start, const tf::Matrix3x3 &mat, const string &frame, int color, int id)
 {
   visualization_msgs::Marker rvizMarker;
-  
+
   rvizMarker.header.frame_id = frame;
-  rvizMarker.header.stamp = ros::Time::now(); 
+  rvizMarker.header.stamp = ros::Time::now();
   rvizMarker.id = id;
   rvizMarker.ns = "arrow";
-  
+
   rvizMarker.scale.x = 0.01;
   rvizMarker.scale.y = 0.01;
   rvizMarker.scale.z = 0.1;
-  
+
   rvizMarker.type = visualization_msgs::Marker::ARROW;
   rvizMarker.action = visualization_msgs::Marker::ADD;
-  
+
   for(int i=0; i<3; i++){
-    rvizMarker.points.clear();	
+    rvizMarker.points.clear();
     rvizMarker.points.push_back(start);
     gm::Point end;
     end.x = start.x + mat[0][i];
@@ -214,7 +212,7 @@ void drawArrow(gm::Point start, tf::Matrix3x3 mat, string frame, int color, int 
 
 
 // Infer the master tag corner positons from the other observed tags
-// Also does some of the bookkeeping for tracking that MultiMarker::_GetPose does 
+// Also does some of the bookkeeping for tracking that MultiMarker::_GetPose does
 int InferCorners(const ARCloud &cloud, MultiMarkerBundle &master, ARCloud &bund_corners){
   bund_corners.clear();
   bund_corners.resize(4);
@@ -225,19 +223,18 @@ int InferCorners(const ARCloud &cloud, MultiMarkerBundle &master, ARCloud &bund_
   }
 
   // Reset the marker_status to 1 for all markers in point_cloud for tracking purposes
-  for (size_t i=0; i<master.marker_status.size(); i++) {
-    if (master.marker_status[i] > 0) master.marker_status[i]=1;
+  for (int & marker_status : master.marker_status) {
+    if (marker_status > 0) marker_status=1;
   }
 
   int n_est = 0;
 
   // For every detected marker
-  for (size_t i=0; i<marker_detector.markers->size(); i++)
+  for (auto & i : *marker_detector.markers)
     {
-      const Marker* marker = &((*marker_detector.markers)[i]);
-      int id = marker->GetId();
+      const Marker* marker = &i;
+      int id = static_cast<int>(marker->GetId());
       int index = master.get_id_index(id);
-      int mast_id = master.master_id;
       if (index < 0) continue;
 
       // But only if we have corresponding points in the pointcloud
@@ -256,15 +253,15 @@ int InferCorners(const ARCloud &cloud, MultiMarkerBundle &master, ARCloud &bund_
             tf::Vector3 corner_coord = master.rel_corners[index][j];
             gm::PointStamped p, output_p;
             p.header.frame_id = marker_frame;
-            p.point.x = corner_coord.y()/100.0;  
+            p.point.x = corner_coord.y()/100.0;
             p.point.y = -corner_coord.x()/100.0;
             p.point.z = corner_coord.z()/100.0;
-            
+
             try{
                 tf_listener->waitForTransform(cloud.header.frame_id, marker_frame, ros::Time(0), ros::Duration(0.1));
-                tf_listener->transformPoint(cloud.header.frame_id, p, output_p);			
+                tf_listener->transformPoint(cloud.header.frame_id, p, output_p);
             }
-            catch (tf::TransformException ex){
+            catch (const tf::TransformException &ex){
                 ROS_ERROR("ERROR InferCorners: %s",ex.what());
                 return -1;
             }
@@ -276,13 +273,13 @@ int InferCorners(const ARCloud &cloud, MultiMarkerBundle &master, ARCloud &bund_
         master.marker_status[index] = 2; // Used for tracking
       }
     }
-  
+
   //Divide to take the average of the summed estimates
   if(n_est > 0){
     for(int i=0; i<4; i++){
-        bund_corners[i].x /= n_est;
-        bund_corners[i].y /= n_est;
-        bund_corners[i].z /= n_est;
+        bund_corners[i].x /= static_cast<float>(n_est);
+        bund_corners[i].y /= static_cast<float>(n_est);
+        bund_corners[i].z /= static_cast<float>(n_est);
     }
   }
 
@@ -290,7 +287,7 @@ int InferCorners(const ARCloud &cloud, MultiMarkerBundle &master, ARCloud &bund_
 }
 
 
-int PlaneFitPoseImprovement(int id, const ARCloud &corners_3D, ARCloud::Ptr selected_points, const ARCloud &cloud, Pose &p){
+int PlaneFitPoseImprovement(int id, const ARCloud &corners_3D, const ARCloud::Ptr& selected_points, const ARCloud &cloud, Pose &p){
 
   ata::PlaneFitResult res = ata::fitPlane(selected_points);
   gm::PoseStamped pose;
@@ -299,13 +296,13 @@ int PlaneFitPoseImprovement(int id, const ARCloud &corners_3D, ARCloud::Ptr sele
   pose.pose.position = ata::centroid(*res.inliers);
 
   draw3dPoints(selected_points, cloud.header.frame_id, 1, id, 0.005);
-	  
-  //Get 2 points that point forward in marker x direction   
+
+  //Get 2 points that point forward in marker x direction
   int i1,i2;
-  if(isnan(corners_3D[0].x) || isnan(corners_3D[0].y) || isnan(corners_3D[0].z) || 
+  if(isnan(corners_3D[0].x) || isnan(corners_3D[0].y) || isnan(corners_3D[0].z) ||
      isnan(corners_3D[3].x) || isnan(corners_3D[3].y) || isnan(corners_3D[3].z))
     {
-      if(isnan(corners_3D[1].x) || isnan(corners_3D[1].y) || isnan(corners_3D[1].z) || 
+      if(isnan(corners_3D[1].x) || isnan(corners_3D[1].y) || isnan(corners_3D[1].z) ||
 	 isnan(corners_3D[2].x) || isnan(corners_3D[2].y) || isnan(corners_3D[2].z))
 	{
 	  return -1;
@@ -313,41 +310,41 @@ int PlaneFitPoseImprovement(int id, const ARCloud &corners_3D, ARCloud::Ptr sele
       else{
 	i1 = 1;
 	i2 = 2;
-      }	
+      }
     }
   else{
     i1 = 0;
     i2 = 3;
   }
 
-  //Get 2 points the point forward in marker y direction   
+  //Get 2 points the point forward in marker y direction
   int i3,i4;
-  if(isnan(corners_3D[0].x) || isnan(corners_3D[0].y) || isnan(corners_3D[0].z) || 
+  if(isnan(corners_3D[0].x) || isnan(corners_3D[0].y) || isnan(corners_3D[0].z) ||
      isnan(corners_3D[1].x) || isnan(corners_3D[1].y) || isnan(corners_3D[1].z))
-    {   
-      if(isnan(corners_3D[3].x) || isnan(corners_3D[3].y) || isnan(corners_3D[3].z) || 
+    {
+      if(isnan(corners_3D[3].x) || isnan(corners_3D[3].y) || isnan(corners_3D[3].z) ||
 	 isnan(corners_3D[2].x) || isnan(corners_3D[2].y) || isnan(corners_3D[2].z))
-	{   
+	{
 	  return -1;
 	}
       else{
 	i3 = 2;
 	i4 = 3;
-      }	
+      }
     }
   else{
     i3 = 1;
     i4 = 0;
   }
-   
+
   ARCloud::Ptr orient_points(new ARCloud());
   orient_points->points.push_back(corners_3D[i1]);
   draw3dPoints(orient_points, cloud.header.frame_id, 3, id+1000, 0.008);
-      
+
   orient_points->clear();
   orient_points->points.push_back(corners_3D[i2]);
   draw3dPoints(orient_points, cloud.header.frame_id, 2, id+2000, 0.008);
- 
+
   int succ;
   succ = ata::extractOrientation(res.coeffs, corners_3D[i1], corners_3D[i2], corners_3D[i3], corners_3D[i4], pose.pose.orientation);
   if(succ < 0) return -1;
@@ -364,7 +361,7 @@ int PlaneFitPoseImprovement(int id, const ARCloud &corners_3D, ARCloud::Ptr sele
   p.quaternion[1] = pose.pose.orientation.x;
   p.quaternion[2] = pose.pose.orientation.y;
   p.quaternion[3] = pose.pose.orientation.z;
-  p.quaternion[0] = pose.pose.orientation.w; 
+  p.quaternion[0] = pose.pose.orientation.w;
 
   return 0;
 }
@@ -378,19 +375,19 @@ void GetMultiMarkerPoses(IplImage *image, ARCloud &cloud) {
     master_visible[i] = false;
     bundles_seen[i] = 0;
   }
-  
+
   //Detect and track the markers
   if (marker_detector.Detect(image, cam, true, false, max_new_marker_error,
-			     max_track_error, CVSEQ, true)) 
+			     max_track_error, CVSEQ, true))
     {
       //printf("\n--------------------------\n\n");
       for (size_t i=0; i<marker_detector.markers->size(); i++)
     	{
 	  vector<cv::Point, Eigen::aligned_allocator<cv::Point> > pixels;
 	  Marker *m = &((*marker_detector.markers)[i]);
-	  int id = m->GetId();
+	  int id = static_cast<int>(m->GetId());
 	  //cout << "******* ID: " << id << endl;
-      
+
 	  //Get the 3D points of the outer corners
           /*
 	  PointDouble corner0 = m->marker_corners_img[0];
@@ -402,22 +399,22 @@ void GetMultiMarkerPoses(IplImage *image, ARCloud &cloud) {
 	  m->ros_corners_3D[2] = cloud(corner2.x, corner2.y);
 	  m->ros_corners_3D[3] = cloud(corner3.x, corner3.y);
 	  */
-          
+
 	  //Get the 3D inner corner points - more stable than outer corners that can "fall off" object
 	  int resol = m->GetRes();
 	  int ori = m->ros_orientation;
-      
+
 	  PointDouble pt1, pt2, pt3, pt4;
 	  pt4 = m->ros_marker_points_img[0];
 	  pt3 = m->ros_marker_points_img[resol-1];
 	  pt1 = m->ros_marker_points_img[(resol*resol)-resol];
 	  pt2 = m->ros_marker_points_img[(resol*resol)-1];
-	  
+
 	  m->ros_corners_3D[0] = cloud(pt1.x, pt1.y);
 	  m->ros_corners_3D[1] = cloud(pt2.x, pt2.y);
 	  m->ros_corners_3D[2] = cloud(pt3.x, pt3.y);
 	  m->ros_corners_3D[3] = cloud(pt4.x, pt4.y);
-	  
+
 	  if(ori >= 0 && ori < 4){
 	    if(ori != 0){
 	      std::rotate(m->ros_corners_3D.begin(), m->ros_corners_3D.begin() + ori, m->ros_corners_3D.end());
@@ -430,14 +427,14 @@ void GetMultiMarkerPoses(IplImage *image, ARCloud &cloud) {
 	  int master_ind = -1;
 	  for(int j=0; j<n_bundles; j++){
 	    if(id == master_id[j])
-	      master_visible[j] = true; 
+	      master_visible[j] = true;
 	    master_ind = j;
 	  }
 
 	  //Mark the bundle that marker belongs to as "seen"
 	  int bundle_ind = -1;
 	  for(int j=0; j<n_bundles; j++){
-	    for(int k=0; k<bundle_indices[j].size(); k++){
+	    for(size_t k=0; k<bundle_indices[j].size(); k++){
 	      if(bundle_indices[j][k] == id){
             bundle_ind = j;
             bundles_seen[j] += 1;
@@ -448,12 +445,12 @@ void GetMultiMarkerPoses(IplImage *image, ARCloud &cloud) {
 
 	  //Get the 3D marker points
 	  BOOST_FOREACH (const PointDouble& p, m->ros_marker_points_img)
-	    pixels.push_back(cv::Point(p.x, p.y));	  
+	    pixels.emplace_back(p.x, p.y);
 	  ARCloud::Ptr selected_points = ata::filterCloud(cloud, pixels);
 
 	  //Use the kinect data to find a plane and pose for the marker
 	  int ret = PlaneFitPoseImprovement(i, m->ros_corners_3D, selected_points, cloud, m->pose);
-            
+
 	  //If the plane fit fails...
 	  if(ret < 0){
 		//Mark this tag as invalid
@@ -463,14 +460,14 @@ void GetMultiMarkerPoses(IplImage *image, ARCloud &cloud) {
 	      master_visible[master_ind] = false;
 	    //decrement the number of markers seen in this bundle
 	    bundles_seen[bundle_ind] -= 1;
-	      
+
 	  }
 	  else
 		m->valid = true;
-	}	
+	}
 
       //For each master tag, infer the 3D position of its corners from other visible tags
-      //Then, do a plane fit to those new corners   	
+      //Then, do a plane fit to those new corners
       ARCloud inferred_corners;
       for(int i=0; i<n_bundles; i++){
         if(bundles_seen[i] > 0){
@@ -483,27 +480,27 @@ void GetMultiMarkerPoses(IplImage *image, ARCloud &cloud) {
             //If master is visible, use it directly instead of inferring pose
             //else{
             //    for (size_t j=0; j<marker_detector.markers->size(); j++){
-            //        Marker *m = &((*marker_detector.markers)[j]);                     
+            //        Marker *m = &((*marker_detector.markers)[j]);
             //        if(m->GetId() == master_id[i])
             //            bundlePoses[i] = m->pose;
-            //    } 
+            //    }
             //}
             Pose ret_pose;
             if(med_filt_size > 0){
                 med_filts[i]->addPose(bundlePoses[i]);
                 med_filts[i]->getMedian(ret_pose);
                 bundlePoses[i] = ret_pose;
-            }   
-        }		
+            }
+        }
     }
   }
 }
 
 
-// Given the pose of a marker, builds the appropriate ROS messages for later publishing 
-void makeMarkerMsgs(int type, int id, Pose &p, sensor_msgs::ImageConstPtr image_msg, tf::StampedTransform &CamToOutput, visualization_msgs::Marker *rvizMarker, ar_track_alvar_msgs::AlvarMarker *ar_pose_marker, int confidence){
+// Given the pose of a marker, builds the appropriate ROS messages for later publishing
+void makeMarkerMsgs(int type, int id, Pose &p, const sensor_msgs::ImageConstPtr& image_msg, tf::StampedTransform &CamToOutput, visualization_msgs::Marker *rvizMarker, ar_track_alvar_msgs::AlvarMarker *ar_pose_marker, int confidence){
   double px,py,pz,qx,qy,qz,qw;
-	
+
   px = p.translation[0]/100.0;
   py = p.translation[1]/100.0;
   pz = p.translation[2]/100.0;
@@ -527,7 +524,7 @@ void makeMarkerMsgs(int type, int id, Pose &p, sensor_msgs::ImageConstPtr image_
   out << id;
   std::string id_string = out.str();
   markerFrame += id_string;
-  tf::StampedTransform camToMarker (t, image_msg->header.stamp, image_msg->header.frame_id, markerFrame.c_str());
+  tf::StampedTransform camToMarker (t, image_msg->header.stamp, image_msg->header.frame_id, markerFrame);
   tf_broadcaster->sendTransform(camToMarker);
 
   //Create the rviz visualization message
@@ -571,7 +568,7 @@ void makeMarkerMsgs(int type, int id, Pose &p, sensor_msgs::ImageConstPtr image_
 
   rvizMarker->lifetime = ros::Duration (0.1);
 
-  // Only publish the pose of the master tag in each bundle, since that's all we really care about aside from visualization 
+  // Only publish the pose of the master tag in each bundle, since that's all we really care about aside from visualization
   if(type==MAIN_MARKER){
     //Take the pose of the tag in the camera frame and convert to the output frame (usually torso_lift_link for the PR2)
     tf::Transform tagPoseOutput = CamToOutput * markerPose;
@@ -583,8 +580,6 @@ void makeMarkerMsgs(int type, int id, Pose &p, sensor_msgs::ImageConstPtr image_
     ar_pose_marker->id = id;
     ar_pose_marker->confidence = confidence;
   }
-  else
-    ar_pose_marker = NULL;
 }
 
 
@@ -603,7 +598,7 @@ void getPointCloudCallback (const sensor_msgs::PointCloud2ConstPtr &msg)
 	tf_listener->waitForTransform(output_frame, msg->header.frame_id, msg->header.stamp, ros::Duration(1.0));
 	tf_listener->lookupTransform(output_frame, msg->header.frame_id, msg->header.stamp, CamToOutput);
       }
-      catch (tf::TransformException ex){
+      catch (const tf::TransformException &ex){
 	ROS_ERROR("%s",ex.what());
       }
 
@@ -612,7 +607,7 @@ void getPointCloudCallback (const sensor_msgs::PointCloud2ConstPtr &msg)
       ar_track_alvar_msgs::AlvarMarker ar_pose_marker;
       arPoseMarkers_.markers.clear ();
 
-      //Convert cloud to PCL 
+      //Convert cloud to PCL
       ARCloud cloud;
       pcl::fromROSMsg(*msg, cloud);
 
@@ -620,7 +615,7 @@ void getPointCloudCallback (const sensor_msgs::PointCloud2ConstPtr &msg)
       pcl::toROSMsg (*msg, *image_msg);
       image_msg->header.stamp = msg->header.stamp;
       image_msg->header.frame_id = msg->header.frame_id;
-            
+
       //Convert the image
       cv_ptr_ = cv_bridge::toCvCopy(image_msg, sensor_msgs::image_encodings::BGR8);
 
@@ -632,9 +627,9 @@ void getPointCloudCallback (const sensor_msgs::PointCloud2ConstPtr &msg)
       IplImage ipl_image = cv_ptr_->image;
       GetMultiMarkerPoses(&ipl_image, cloud);
 
-      for (size_t i=0; i<marker_detector.markers->size(); i++)
+      for (auto & marker : *marker_detector.markers)
 	{
-	  int id = (*(marker_detector.markers))[i].GetId();	
+	  int id = static_cast<int>(marker.GetId());
 
 	  // Draw if id is valid
 	  if(id >= 0){
@@ -644,14 +639,14 @@ void getPointCloudCallback (const sensor_msgs::PointCloud2ConstPtr &msg)
 	    for(int j=0; j<n_bundles; j++){
 	      if(id == master_id[j]) should_draw = false;
 	    }
-	    if(should_draw && (*(marker_detector.markers))[i].valid){
-	      Pose p = (*(marker_detector.markers))[i].pose;
+	    if(should_draw && marker.valid){
+	      Pose p = marker.pose;
 	      makeMarkerMsgs(VISIBLE_MARKER, id, p, image_msg, CamToOutput, &rvizMarker, &ar_pose_marker, 1);
 	      rvizMarkerPub_.publish (rvizMarker);
 	    }
 	  }
 	}
-			
+
       //Draw the main markers, whether they are visible or not -- but only if at least 1 marker from their bundle is currently seen
       for(int i=0; i<n_bundles; i++)
 	{
@@ -683,18 +678,18 @@ int makeMasterTransform (const CvPoint3D64f& p0, const CvPoint3D64f& p1,
     const tf::Vector3 q1(p1.x, p1.y, p1.z);
     const tf::Vector3 q2(p2.x, p2.y, p2.z);
     const tf::Vector3 q3(p3.x, p3.y, p3.z);
-  
+
     // (inverse) matrix with the given properties
     const tf::Vector3 v = (q1-q0).normalized();
     const tf::Vector3 w = (q2-q1).normalized();
     const tf::Vector3 n = v.cross(w);
     tf::Matrix3x3 m(v[0], v[1], v[2], w[0], w[1], w[2], n[0], n[1], n[2]);
     m = m.inverse();
-    
+
     //Translate to quaternion
     if(m.determinant() <= 0)
         return -1;
-  
+
     //Use Eigen for this part instead, because the ROS version of bullet appears to have a bug
     Eigen::Matrix3f eig_m;
     for(int i=0; i<3; i++){
@@ -703,7 +698,7 @@ int makeMasterTransform (const CvPoint3D64f& p0, const CvPoint3D64f& p1,
         }
     }
     Eigen::Quaternion<float> eig_quat(eig_m);
-    
+
     // Translate back to bullet
     tfScalar ex = eig_quat.x();
     tfScalar ey = eig_quat.y();
@@ -711,15 +706,15 @@ int makeMasterTransform (const CvPoint3D64f& p0, const CvPoint3D64f& p1,
     tfScalar ew = eig_quat.w();
     tf::Quaternion quat(ex,ey,ez,ew);
     quat = quat.normalized();
-    
+
     double qx = (q0.x() + q1.x() + q2.x() + q3.x()) / 4.0;
     double qy = (q0.y() + q1.y() + q2.y() + q3.y()) / 4.0;
     double qz = (q0.z() + q1.z() + q2.z() + q3.z()) / 4.0;
     tf::Vector3 origin (qx,qy,qz);
-    
+
     tf::Transform tform (quat, origin);  //transform from master to marker
     retT = tform;
-    
+
     return 0;
   }
 
@@ -730,96 +725,161 @@ int calcAndSaveMasterCoords(MultiMarkerBundle &master)
 {
     int mast_id = master.master_id;
     std::vector<tf::Vector3> rel_corner_coords;
-    
+
     //Go through all the markers associated with this bundle
     for (size_t i=0; i<master.marker_indices.size(); i++){
         int mark_id = master.marker_indices[i];
         rel_corner_coords.clear();
-        
+
         //Get the coords of the corners of the child marker in the master frame
         CvPoint3D64f mark_corners[4];
         for(int j=0; j<4; j++){
             mark_corners[j] = master.pointcloud[master.pointcloud_index(mark_id, j)];
         }
-        
+
         //Use them to find a transform from the master frame to the child frame
         tf::Transform tform;
         makeMasterTransform(mark_corners[0], mark_corners[1], mark_corners[2], mark_corners[3], tform);
-    
+
         //Finally, find the coords of the corners of the master in the child frame
         for(int j=0; j<4; j++){
-            
+
             CvPoint3D64f corner_coord = master.pointcloud[master.pointcloud_index(mast_id, j)];
             double px = corner_coord.x;
             double py = corner_coord.y;
             double pz = corner_coord.z;
-        
+
             tf::Vector3 corner_vec (px, py, pz);
             tf::Vector3 ans = (tform.inverse()) * corner_vec;
             rel_corner_coords.push_back(ans);
         }
-        
+
         master.rel_corners.push_back(rel_corner_coords);
     }
-    
+
     return 0;
 }
 
+void configCallback(ar_track_alvar::ParamsConfig &config, uint32_t level)
+{
+  (void)level;
+  ROS_INFO("AR tracker reconfigured: %s %.2f %.2f %.2f %.2f", config.enabled ? "ENABLED" : "DISABLED",
+           config.max_frequency, config.marker_size, config.max_new_marker_error, config.max_track_error);
+
+  enable_switched = enabled != config.enabled;
+
+  enabled = config.enabled;
+  max_frequency = config.max_frequency;
+  marker_size = config.marker_size;
+  max_new_marker_error = config.max_new_marker_error;
+  max_track_error = config.max_track_error;
+}
+
+void enableCallback(const std_msgs::BoolConstPtr& msg)
+{
+    enable_switched = enabled != msg->data;
+    enabled = msg->data;
+}
 
 int main(int argc, char *argv[])
 {
-  ros::init (argc, argv, "marker_detect");
-  ros::NodeHandle n;
+  ros::init(argc, argv, "marker_detect");
+  ros::NodeHandle n, pn("~");
 
-  if(argc < 9){
-    std::cout << std::endl;
-    cout << "Not enough arguments provided." << endl;
-    cout << "Usage: ./findMarkerBundles <marker size in cm> <max new marker error> <max track error> <cam image topic> <cam info topic> <output frame> <median filt size> <list of bundle XML files...>" << endl;
-    std::cout << std::endl;
-    return 0;
+  vector<string> bundle_files;
+
+  if (argc > 1) {
+    ROS_WARN(
+      "Command line arguments are deprecated. Consider using ROS parameters and remappings.");
+
+    if (argc < 9) {
+      std::cout << std::endl;
+      cout << "Not enough arguments provided." << endl;
+      cout
+        << "Usage: ./findMarkerBundles <marker size in cm> <max new marker error> <max track error> <cam image topic> <cam info topic> <output frame> <median filt size> <list of bundle XML files...>"
+        << endl;
+      std::cout << std::endl;
+      return 0;
+    }
+
+    // Get params from command line
+    marker_size = atof(argv[1]);
+    max_new_marker_error = atof(argv[2]);
+    max_track_error = atof(argv[3]);
+    cam_image_topic = argv[4];
+    cam_info_topic = argv[5];
+    output_frame = argv[6];
+    med_filt_size = atoi(argv[7]);
+    int n_args_before_list = 8;
+    n_bundles = argc - n_args_before_list;
+
+  } else {
+    std::string bundle_string;
+    // Get params from ros param server.
+    pn.param("marker_size", marker_size, 10.0);
+    pn.param("max_new_marker_error", max_new_marker_error, 0.08);
+    pn.param("max_track_error", max_track_error, 0.2);
+    pn.param("max_frequency", max_frequency, 8.0);
+    pn.param("marker_resolution", marker_resolution, 5);
+    pn.param("marker_margin", marker_margin, 2);
+    pn.param("med_filt_size", med_filt_size, 10);
+    pn.param<std::string>("bundle_files", bundle_string, "");
+    if (!pn.getParam("output_frame", output_frame)) {
+      ROS_ERROR("Param 'output_frame' has to be set.");
+      exit(EXIT_FAILURE);
+    }
+
+    // extract bundles
+    std::stringstream ss(bundle_string);
+    std::string token;
+    while (std::getline(ss, token, ' ')) {
+      if (!token.empty()) {
+        bundle_files.push_back(token);
+      }
+    }
+    n_bundles = bundle_files.size();
+
+    // Camera input topics. Use remapping to map to your camera topics.
+    cam_image_topic = "camera_image";
+    cam_info_topic = "camera_info";
   }
 
-  // Get params from command line
-  marker_size = atof(argv[1]);
-  max_new_marker_error = atof(argv[2]);
-  max_track_error = atof(argv[3]);
-  cam_image_topic = argv[4]; 
-  cam_info_topic = argv[5];
-  output_frame = argv[6];
-  med_filt_size = atoi(argv[7]);
-  int n_args_before_list = 8;
-  n_bundles = argc - n_args_before_list;
+  // Set dynamically configurable parameters so they don't get replaced by default values
+  pn.setParam("max_frequency", max_frequency);
+  pn.setParam("marker_size", marker_size);
+  pn.setParam("max_new_marker_error", max_new_marker_error);
+  pn.setParam("max_track_error", max_track_error);
 
-  marker_detector.SetMarkerSize(marker_size);
-  multi_marker_bundles = new MultiMarkerBundle*[n_bundles];	
+  marker_detector.SetMarkerSize(marker_size, marker_resolution, marker_margin);
+  multi_marker_bundles = new MultiMarkerBundle*[n_bundles];
   bundlePoses = new Pose[n_bundles];
-  master_id = new int[n_bundles]; 
-  bundle_indices = new std::vector<int>[n_bundles]; 
-  bundles_seen = new int[n_bundles]; 
+  master_id = new int[n_bundles];
+  bundle_indices = new std::vector<int>[n_bundles];
+  bundles_seen = new int[n_bundles];
   master_visible = new bool[n_bundles];
-	
+
   //Create median filters
   med_filts = new ata::MedianFilter*[n_bundles];
   for(int i=0; i<n_bundles; i++)
     med_filts[i] = new ata::MedianFilter(med_filt_size);
 
   // Load the marker bundle XML files
-  for(int i=0; i<n_bundles; i++){	
-    bundlePoses[i].Reset();		
+  for(int i=0; i < n_bundles; i++){
+    bundlePoses[i].Reset();
     MultiMarker loadHelper;
-    if(loadHelper.Load(argv[i + n_args_before_list], FILE_FORMAT_XML)){
+    if(loadHelper.Load(bundle_files[i].c_str(), FILE_FORMAT_XML)){
       vector<int> id_vector = loadHelper.getIndices();
-      multi_marker_bundles[i] = new MultiMarkerBundle(id_vector);	
-      multi_marker_bundles[i]->Load(argv[i + n_args_before_list], FILE_FORMAT_XML);
+      multi_marker_bundles[i] = new MultiMarkerBundle(id_vector);
+      multi_marker_bundles[i]->Load(bundle_files[i].c_str(), FILE_FORMAT_XML);
       master_id[i] = multi_marker_bundles[i]->getMasterId();
       bundle_indices[i] = multi_marker_bundles[i]->getIndices();
       calcAndSaveMasterCoords(*(multi_marker_bundles[i]));
     }
-    else{
-      cout<<"Cannot load file "<< argv[i + n_args_before_list] << endl;	
+    else {
+      cout<<"Cannot load file "<< bundle_files[i] << endl;
       return 0;
-    }		
-  }  
+    }
+  }
 
   // Set up camera, listeners, and broadcasters
   cam = new Camera(n, cam_info_topic);
@@ -828,16 +888,50 @@ int main(int argc, char *argv[])
   arMarkerPub_ = n.advertise < ar_track_alvar_msgs::AlvarMarkers > ("ar_pose_marker", 0);
   rvizMarkerPub_ = n.advertise < visualization_msgs::Marker > ("visualization_marker", 0);
   rvizMarkerPub2_ = n.advertise < visualization_msgs::Marker > ("ARmarker_points", 0);
-	
+
+  // Prepare dynamic reconfiguration
+  dynamic_reconfigure::Server < ar_track_alvar::ParamsConfig > server;
+  dynamic_reconfigure::Server<ar_track_alvar::ParamsConfig>::CallbackType f;
+
+  f = boost::bind(&configCallback, _1, _2);
+  server.setCallback(f);
+
   //Give tf a chance to catch up before the camera callback starts asking for transforms
   ros::Duration(1.0).sleep();
-  ros::spinOnce();			
-	 
-  //Subscribe to topics and set up callbacks
-  ROS_INFO ("Subscribing to image topic");
-  cloud_sub_ = n.subscribe(cam_image_topic, 1, &getPointCloudCallback);
+  ros::spinOnce();
 
-  ros::spin();
+  // Run at the configured rate, discarding pointcloud msgs if necessary
+  ros::Rate rate(max_frequency);
+
+  /// Subscriber for enable-topic so that a user can turn off the detection if it is not used without
+  /// having to use the reconfigure where he has to know all parameters
+  ros::Subscriber enable_sub_ = pn.subscribe("enable_detection", 1, &enableCallback);
+
+  enable_switched = true;
+  while (ros::ok()) {
+    ros::spinOnce();
+    rate.sleep();
+
+    if (std::abs((rate.expectedCycleTime() - ros::Duration(1.0 / max_frequency)).toSec()) > 0.001)
+    {
+      // Change rate dynamically; if must be above 0, as 0 will provoke a segfault on next spinOnce
+      ROS_DEBUG("Changing frequency from %.2f to %.2f", 1.0 / rate.expectedCycleTime().toSec(), max_frequency);
+      rate = ros::Rate(max_frequency);
+    }
+
+    if (enable_switched)
+    {
+      // Enable/disable switch: subscribe/unsubscribe to make use of pointcloud processing nodelet
+      // lazy publishing policy; in CPU-scarce computer as TurtleBot's laptop this is a huge saving
+      if (enabled) {
+        ROS_INFO ("Subscribing to cloud topic");
+        cloud_sub_ = n.subscribe(cam_image_topic, 1, &getPointCloudCallback);
+      }
+      else
+        cloud_sub_.shutdown();
+      enable_switched = false;
+    }
+  }
 
   return 0;
 }
