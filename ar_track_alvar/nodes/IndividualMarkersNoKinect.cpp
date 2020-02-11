@@ -90,6 +90,7 @@ void getCapCallback (const sensor_msgs::ImageConstPtr & image_msg)
             }
             catch (tf::TransformException ex){
                 ROS_ERROR("%s",ex.what());
+                return;
             }
 
 
