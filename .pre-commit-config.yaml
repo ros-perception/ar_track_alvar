@@ -1,0 +1,10 @@
+- repo: local
+  hooks:
+    -   id: clang-format
+        name: Run clang-format
+        description: Clang C/C++ code formatter.
+        entry: clang-format -i
+        args: [-style=file]
+        language: system
+        types: [file, c++]
+        # note: formatting style in .clang-format

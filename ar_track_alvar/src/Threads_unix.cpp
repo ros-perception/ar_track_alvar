@@ -26,42 +26,42 @@
 #include <vector>
 #include <pthread.h>
 
-namespace alvar {
-
+namespace alvar
+{
 class ThreadsPrivateData
 {
 public:
-    ThreadsPrivateData()
-        : mHandles()
-    {
-    }
+  ThreadsPrivateData() : mHandles()
+  {
+  }
 
-    std::vector<pthread_t> mHandles;
+  std::vector<pthread_t> mHandles;
 };
 
-ThreadsPrivate::ThreadsPrivate()
-    : d(new ThreadsPrivateData())
+ThreadsPrivate::ThreadsPrivate() : d(new ThreadsPrivateData())
 {
 }
 
 ThreadsPrivate::~ThreadsPrivate()
 {
-    for (int i = 0; i < (int)d->mHandles.size(); ++i) {
-		pthread_exit(&d->mHandles.at(i));
-	}
-	d->mHandles.clear();
+  for (int i = 0; i < (int)d->mHandles.size(); ++i)
+  {
+    pthread_exit(&d->mHandles.at(i));
+  }
+  d->mHandles.clear();
 
-    delete d;
+  delete d;
 }
 
-bool ThreadsPrivate::create(void *(*method)(void *), void *parameters)
+bool ThreadsPrivate::create(void* (*method)(void*), void* parameters)
 {
-    pthread_t thread;
-    if (pthread_create(&thread, 0, method, parameters)) {
-        d->mHandles.push_back(thread);
-        return true;
-    }
-    return false;
+  pthread_t thread;
+  if (pthread_create(&thread, 0, method, parameters))
+  {
+    d->mHandles.push_back(thread);
+    return true;
+  }
+  return false;
 }
 
-} // namespace alvar
+}  // namespace alvar

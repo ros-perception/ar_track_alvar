@@ -35,85 +35,92 @@
  * \brief This file implements an orientation tracker.
  */
 
-namespace alvar {
-
+namespace alvar
+{
 /**
  * \brief Track orientation based only on features in the image plane.
  */
-class ALVAR_EXPORT TrackerOrientation : public Tracker {
-	
+class ALVAR_EXPORT TrackerOrientation : public Tracker
+{
 public:
-	TrackerOrientation(int width, int height, int image_scale=1, int outlier_limit=20)
-		: _image_scale(image_scale)
-		, _outlier_limit(outlier_limit)
-		, _xres(width)
-		, _yres(height)
-	{
-		_camera		  = 0;
-		_grsc		  = 0;
-		_object_model = 0;
-	}
+  TrackerOrientation(int width, int height, int image_scale = 1, int outlier_limit = 20)
+    : _image_scale(image_scale), _outlier_limit(outlier_limit), _xres(width), _yres(height)
+  {
+    _camera = 0;
+    _grsc = 0;
+    _object_model = 0;
+  }
 
 private:
+  struct Feature
+  {
+    enum
+    {
+      NOT_TRACKED = 0,
+      IS_TRACKED
+    } status2D;
+    enum
+    {
+      NONE = 0,
+      USE_FOR_POSE,
+      IS_OUTLIER,
+      IS_INITIAL
+    } status3D;
 
-	struct Feature
-	{
-		enum {NOT_TRACKED=0, IS_TRACKED} status2D;
-		enum {NONE=0, USE_FOR_POSE, IS_OUTLIER, IS_INITIAL} status3D;
+    Feature()
+    {
+      status3D = NONE;
+      status2D = NOT_TRACKED;
+    }
 
-		Feature()
-		{
-			status3D = NONE;
-			status2D = NOT_TRACKED;
-		}
+    Feature(double vx, double vy)
+    {
+      point.x = float(vx);
+      point.y = float(vy);
+      status3D = NONE;
+      status2D = NOT_TRACKED;
+    }
 
-		Feature(double vx, double vy)
-		{
-			point.x   = float(vx);
-			point.y   = float(vy);
-			status3D  = NONE;
-			status2D  = NOT_TRACKED;
-		}
-	 
-		~Feature() {}
+    ~Feature()
+    {
+    }
 
-		CvPoint2D32f point;
-		CvPoint3D64f point3d;
-	};
+    CvPoint2D32f point;
+    CvPoint3D64f point3d;
+  };
 
-	TrackerFeatures		  _ft;
-	std::map<int,Feature> _F_v;
+  TrackerFeatures _ft;
+  std::map<int, Feature> _F_v;
 
-	int					  _xres;
-	int					  _yres;
-	int					  _image_scale;
-	int					  _outlier_limit;
-	
-	Pose				  _pose;
-	IplImage			 *_grsc;
-	Camera				 *_camera;
-	CvMat				 *_object_model;
+  int _xres;
+  int _yres;
+  int _image_scale;
+  int _outlier_limit;
+
+  Pose _pose;
+  IplImage* _grsc;
+  Camera* _camera;
+  CvMat* _object_model;
 
 public:
-	void SetCamera(Camera *camera) {
-		_camera = camera;
-	}
-	void GetPose(Pose &pose);
-	void GetPose(double gl_mat[16])	{
-		_pose.GetMatrixGL(gl_mat);
-	}
-	void Reset();
-	double Track(IplImage *image);
+  void SetCamera(Camera* camera)
+  {
+    _camera = camera;
+  }
+  void GetPose(Pose& pose);
+  void GetPose(double gl_mat[16])
+  {
+    _pose.GetMatrixGL(gl_mat);
+  }
+  void Reset();
+  double Track(IplImage* image);
 
 private:
-	static void Project(CvMat* state, CvMat* projection, void *param);
-	bool UpdatePose(IplImage* image=0);
-	bool UpdateRotationOnly(IplImage *gray, IplImage *image=0);
-
+  static void Project(CvMat* state, CvMat* projection, void* param);
+  bool UpdatePose(IplImage* image = 0);
+  bool UpdateRotationOnly(IplImage* gray, IplImage* image = 0);
 };
 
-} // namespace alvar
+}  // namespace alvar
 
 #endif
-
-

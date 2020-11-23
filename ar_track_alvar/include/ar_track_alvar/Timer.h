@@ -32,8 +32,8 @@
 
 #include "Alvar.h"
 
-namespace alvar {
-
+namespace alvar
+{
 class TimerPrivate;
 
 /**
@@ -44,30 +44,30 @@ class TimerPrivate;
 class ALVAR_EXPORT Timer
 {
 public:
-    /**
-     * \brief Constructor.
-     */
-    Timer();
+  /**
+   * \brief Constructor.
+   */
+  Timer();
 
-    /**
-     * \brief Destructor.
-     */
-    ~Timer();
+  /**
+   * \brief Destructor.
+   */
+  ~Timer();
 
-    /**
-     * \brief Starts the timer.
-     */
-    void start();
+  /**
+   * \brief Starts the timer.
+   */
+  void start();
 
-    /**
-     * \brief Stops the timer and returns the elapsed time in seconds.
-     */
-    double stop();
+  /**
+   * \brief Stops the timer and returns the elapsed time in seconds.
+   */
+  double stop();
 
 private:
-    TimerPrivate *d;
+  TimerPrivate* d;
 };
 
-} // namespace alvar
+}  // namespace alvar
 
 #endif

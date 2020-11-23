@@ -29,9 +29,9 @@
  */
 
 /**
- * \file 
- * 
- * N-dimensional median filter for marker poses 
+ * \file
+ *
+ * N-dimensional median filter for marker poses
  *
  * \author Scott Niekum
  */
@@ -43,22 +43,20 @@
 
 namespace ar_track_alvar
 {
-
 class MedianFilter
 {
- public:
+public:
   MedianFilter(int n);
-  void addPose(const alvar::Pose &new_pose);
-  void getMedian(alvar::Pose &ret_pose);
+  void addPose(const alvar::Pose& new_pose);
+  void getMedian(alvar::Pose& ret_pose);
 
- private:
-  int median_n;  
-  alvar::Pose *median_poses;
+private:
+  int median_n;
+  alvar::Pose* median_poses;
   int median_ind;
   bool median_init;
 };
 
+}  // namespace ar_track_alvar
 
-} // namespace
-
-#endif // include guard
+#endif  // include guard

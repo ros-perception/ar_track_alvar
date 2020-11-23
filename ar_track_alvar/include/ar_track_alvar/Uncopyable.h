@@ -32,8 +32,8 @@
 
 #include "Alvar.h"
 
-namespace alvar {
-
+namespace alvar
+{
 /**
  * \brief Uncopyable for preventing object copies.
  *
@@ -43,32 +43,32 @@ namespace alvar {
 class ALVAR_EXPORT Uncopyable
 {
 protected:
-    /**
-     * \brief Constructor.
-     */
-    Uncopyable()
-	{
-	}
+  /**
+   * \brief Constructor.
+   */
+  Uncopyable()
+  {
+  }
 
-    /**
-     * \brief Destructor.
-     */
-    ~Uncopyable()
-	{
-	}
+  /**
+   * \brief Destructor.
+   */
+  ~Uncopyable()
+  {
+  }
 
 private:
-    /**
-     * \brief Copy constructor.
-     */
-    Uncopyable(const Uncopyable &uncopyable);
+  /**
+   * \brief Copy constructor.
+   */
+  Uncopyable(const Uncopyable& uncopyable);
 
-    /**
-     * \brief Assignment operator.
-     */
-    Uncopyable &operator=(const Uncopyable &uncopyable);
+  /**
+   * \brief Assignment operator.
+   */
+  Uncopyable& operator=(const Uncopyable& uncopyable);
 };
 
-} // namespace alvar
+}  // namespace alvar
 
 #endif

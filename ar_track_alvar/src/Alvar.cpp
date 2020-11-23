@@ -25,21 +25,23 @@
 
 #include <iostream>
 
-namespace alvar {
-
+namespace alvar
+{
 void alvarInfo()
 {
-    std::cerr << "ALVAR " << ALVAR_VERSION << " - A Library for Virtual and Augmented Reality" << std::endl;
-    std::cerr << "Copyright 2007-2012 VTT Technical Research Centre of Finland" << std::endl;
-    std::cerr << "Licensed under the GNU Lesser General Public License" << std::endl;
-    std::cerr << "Built on " << ALVAR_DATE << " for " << ALVAR_SYSTEM << std::endl;
-    std::cerr << std::endl;
+  std::cerr << "ALVAR " << ALVAR_VERSION << " - A Library for Virtual and Augmented Reality" << std::endl;
+  std::cerr << "Copyright 2007-2012 VTT Technical Research Centre of Finland" << std::endl;
+  std::cerr << "Licensed under the GNU Lesser General Public License" << std::endl;
+  std::cerr << "Built on " << ALVAR_DATE << " for " << ALVAR_SYSTEM << std::endl;
+  std::cerr << std::endl;
 }
 
-struct AlvarLoader {
-	AlvarLoader() {
-		alvarInfo();
-	}
+struct AlvarLoader
+{
+  AlvarLoader()
+  {
+    alvarInfo();
+  }
 } alvarBasicLoader;
 
-} // namespace alvar
+}  // namespace alvar

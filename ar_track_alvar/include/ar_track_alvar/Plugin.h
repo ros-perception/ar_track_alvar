@@ -34,64 +34,67 @@
 
 #include <string>
 
-namespace alvar {
-
+namespace alvar
+{
 class PluginPrivate;
 
 /**
  * \brief Plugin for loading dynamic libraries.
  *
- * Plugin class for loading dynamic libraires. The library is loaded during construction and
- * unloaded during destruction.
+ * Plugin class for loading dynamic libraires. The library is loaded during
+ * construction and unloaded during destruction.
  */
 class Plugin
 {
 public:
-    /**
-     * \brief Constructor.
-     *
-     * Constructing a Plugin object will attempt to load the plugin dynamic library.
-     *
-     * \param filename The filename of the dynamic library to load.
-     * \exception AlvarException An exeption is thrown if the library can't be loaded.
-     */
-    Plugin(const std::string filename);
+  /**
+   * \brief Constructor.
+   *
+   * Constructing a Plugin object will attempt to load the plugin dynamic
+   * library.
+   *
+   * \param filename The filename of the dynamic library to load.
+   * \exception AlvarException An exeption is thrown if the library can't be
+   * loaded.
+   */
+  Plugin(const std::string filename);
 
-    /**
-     * \brief Copy constructor.
-     *
-     * \param plugin The Plugin to copy.
-     */
-    Plugin(const Plugin &plugin);
+  /**
+   * \brief Copy constructor.
+   *
+   * \param plugin The Plugin to copy.
+   */
+  Plugin(const Plugin& plugin);
 
-    /**
-     * \brief Assignment operator.
-     *
-     * \param plugin The Plugin to copy.
-     */
-    Plugin &operator=(const Plugin &plugin);
+  /**
+   * \brief Assignment operator.
+   *
+   * \param plugin The Plugin to copy.
+   */
+  Plugin& operator=(const Plugin& plugin);
 
-    /**
-     * \brief Destructor.
-     */
-    ~Plugin();
+  /**
+   * \brief Destructor.
+   */
+  ~Plugin();
 
-    /**
-     * \brief Resolves the address of a symbol.
-     *
-     * The symbol must be exported from the library as a C function.
-     *
-     * \param symbol The signature of the symbol.
-     * \return The address of the symbol.
-     * \exception AlvarException An exception is thrown if the symbol is not found.
-     */
-    void *resolve(const char *symbol);
+  /**
+   * \brief Resolves the address of a symbol.
+   *
+   * The symbol must be exported from the library as a C function.
+   *
+   * \param symbol The signature of the symbol.
+   * \return The address of the symbol.
+   * \exception AlvarException An exception is thrown if the symbol is not
+   * found.
+   */
+  void* resolve(const char* symbol);
 
 private:
-    PluginPrivate *d;
-    int *mReferenceCount;
+  PluginPrivate* d;
+  int* mReferenceCount;
 };
 
-} // namespace alvar
+}  // namespace alvar
 
 #endif

@@ -36,10 +36,11 @@
 #include <vector>
 #include <cmath>
 
-namespace alvar {
-
+namespace alvar
+{
 /**
- * \brief \e Filter is pure virtual class describing the basic virtual interface for all filters
+ * \brief \e Filter is pure virtual class describing the basic virtual interface
+ * for all filters
  *
  * Basic usage:
  * \code
@@ -62,34 +63,39 @@ namespace alvar {
  *     cout<<(d = 2.9)<<endl;
  * \endcode
  *
- * ...you can add filter just by replacing the \e double with the selected filter:
- * \code
- *     FilterDoubleExponentialSmoothing d(0.2,0.5);
- *     cout<<(d = 3)<<endl;
- *     cout<<(d = 3.2)<<endl;
- *     cout<<(d = 1.3)<<endl;
- *     cout<<(d = 2.9)<<endl;
- * \endcode
+ * ...you can add filter just by replacing the \e double with the selected
+ * filter: \code FilterDoubleExponentialSmoothing d(0.2,0.5); cout<<(d =
+ * 3)<<endl; cout<<(d = 3.2)<<endl; cout<<(d = 1.3)<<endl; cout<<(d
+ * = 2.9)<<endl; \endcode
  *
  * However, using the assignment operator for setting time series data
  * is a little counter-intuitive, so please use \e next() instead when possible.
  *
  * \note   All inherited classes need to update \e value in \e next()
  */
-class ALVAR_EXPORT Filter {
+class ALVAR_EXPORT Filter
+{
 protected:
-	double value;
+  double value;
+
 public:
-	/** \brief Constructor */
-	Filter();
-	/** \brief Get the latest value */
-	double get() const { return value; }
-	/** \brief Get the latest value */
-	operator double () { return get(); }
-	/** \brief Update the value. All inherited classes need to update \e value in \e next(). */
-	virtual double next(double y) = 0;
-	/** \brief Reset the filter state */
-	virtual void reset() = 0;
+  /** \brief Constructor */
+  Filter();
+  /** \brief Get the latest value */
+  double get() const
+  {
+    return value;
+  }
+  /** \brief Get the latest value */
+  operator double()
+  {
+    return get();
+  }
+  /** \brief Update the value. All inherited classes need to update \e value in
+   * \e next(). */
+  virtual double next(double y) = 0;
+  /** \brief Reset the filter state */
+  virtual void reset() = 0;
 };
 
 /**
@@ -99,25 +105,43 @@ public:
  * in the time series and returns always the average of these
  * elements. The size of the window \e window_size can be set
  * in the constructor or with \e setWindowSize() .
- * 
+ *
  * Note, that when the window_size is <= 0 we calculate the
  * average over the whole sequence without using the buffer.
  */
-class ALVAR_EXPORT FilterAverage : public Filter {
+class ALVAR_EXPORT FilterAverage : public Filter
+{
 protected:
-	unsigned int count;
-	unsigned int window_size;
-	std::deque<double> buffer;
-	void push_to_buffer(double y);
+  unsigned int count;
+  unsigned int window_size;
+  std::deque<double> buffer;
+  void push_to_buffer(double y);
+
 public:
-	FilterAverage(int size=3) { setWindowSize(size); }
-	void setWindowSize(int size) { window_size=size; count=0; }
-	int getWindowSize() { return window_size; }
-	int getCurrentSize() { return (int) buffer.size(); }
-	double operator= (double _value) { return next(_value); }
-	virtual double next(double y);
-	virtual void reset();
-	double deviation() const;
+  FilterAverage(int size = 3)
+  {
+    setWindowSize(size);
+  }
+  void setWindowSize(int size)
+  {
+    window_size = size;
+    count = 0;
+  }
+  int getWindowSize()
+  {
+    return window_size;
+  }
+  int getCurrentSize()
+  {
+    return (int)buffer.size();
+  }
+  double operator=(double _value)
+  {
+    return next(_value);
+  }
+  virtual double next(double y);
+  virtual void reset();
+  double deviation() const;
 };
 
 /**
@@ -125,21 +149,30 @@ public:
  *
  * The \e FilterMedian remembers \e window_size last elements
  * in the time series and returns always the middle element
- * after sorting ((\e window_size / 2) + 1) elements. The size of the window 
- * \e window_size can be set in the constructor or with 
+ * after sorting ((\e window_size / 2) + 1) elements. The size of the window
+ * \e window_size can be set in the constructor or with
  * \e setWindowSize() .
  *
  */
-class ALVAR_EXPORT FilterMedian : public FilterAverage {
-	std::vector<double> sort_buffer;
+class ALVAR_EXPORT FilterMedian : public FilterAverage
+{
+  std::vector<double> sort_buffer;
+
 public:
-	FilterMedian(int size=3) { setWindowSize(size); }
-	void setWindowSize(int size) { 
-		FilterAverage::setWindowSize(size);
-		sort_buffer.resize(size);
-	}
-	double operator= (double _value) { return next(_value); }
-	virtual double next(double y);
+  FilterMedian(int size = 3)
+  {
+    setWindowSize(size);
+  }
+  void setWindowSize(int size)
+  {
+    FilterAverage::setWindowSize(size);
+    sort_buffer.resize(size);
+  }
+  double operator=(double _value)
+  {
+    return next(_value);
+  }
+  virtual double next(double y);
 };
 
 /**
@@ -147,55 +180,83 @@ public:
  * \note   This could be named also as FilterSingleExponentialSmoothing
  *
  * The \e FilterRunningAverage calculates a simple running average
- * using the weight value \e alpha. 
+ * using the weight value \e alpha.
  * \code
  *		value = ((1.0-alpha) * value) + (alpha * (double)y);
  * \endcode
- * If alpha is larger (near 1.0) the average reacts faster for 
- * changes and if it is near 0.0 then it reacts slowly. The 
- * weight value \e alpha may be set in the constructor or 
+ * If alpha is larger (near 1.0) the average reacts faster for
+ * changes and if it is near 0.0 then it reacts slowly. The
+ * weight value \e alpha may be set in the constructor or
  * with \e setAlpha() .
  */
-class ALVAR_EXPORT FilterRunningAverage : public Filter {
+class ALVAR_EXPORT FilterRunningAverage : public Filter
+{
 protected:
-	double alpha;
-	bool breset;
+  double alpha;
+  bool breset;
+
 public:
-	FilterRunningAverage(double _alpha=0.5) { breset=true; setAlpha(_alpha); }
-	void setAlpha(double _alpha) { alpha=std::max(std::min(_alpha,1.0),0.0); }
-	double getAlpha() { return alpha; }
-	double operator= (double _value) { return next(_value); }
-	virtual double next(double y);
-	virtual void reset();
+  FilterRunningAverage(double _alpha = 0.5)
+  {
+    breset = true;
+    setAlpha(_alpha);
+  }
+  void setAlpha(double _alpha)
+  {
+    alpha = std::max(std::min(_alpha, 1.0), 0.0);
+  }
+  double getAlpha()
+  {
+    return alpha;
+  }
+  double operator=(double _value)
+  {
+    return next(_value);
+  }
+  virtual double next(double y);
+  virtual void reset();
 };
 
 /**
- * \brief \e FilterDoubleExponentialSmoothing provides an weighted running average filter
+ * \brief \e FilterDoubleExponentialSmoothing provides an weighted running
+ *average filter
  *
  * The \e FilterDoubleExponentialSmoothing calculates a simple running average
  * for both the \e average and \e slope using the weight values \e alpha and
- * \e gamma. 
+ * \e gamma.
  * \code
  *		value = ((1.0-alpha) * (value + slope)) + (alpha * (double)y);
  *		slope = ((1.0-gamma) * (slope)) + (gamma * (value - value_prev));
  * \endcode
- * If the weight values (\e alpha , \e gamma) are larger (near 1.0) 
- * the formulas react faster for changes and if they are near 0.0 
+ * If the weight values (\e alpha , \e gamma) are larger (near 1.0)
+ * the formulas react faster for changes and if they are near 0.0
  * then the reaction is slower. The weight values \e alpha and \e gamma
  * may be set in the constructor or with \e setAlpha() and \e setGamma() .
  */
-class ALVAR_EXPORT FilterDoubleExponentialSmoothing : public FilterRunningAverage {
+class ALVAR_EXPORT FilterDoubleExponentialSmoothing : public FilterRunningAverage
+{
 protected:
-	double gamma;
-	double slope;
+  double gamma;
+  double slope;
+
 public:
-	FilterDoubleExponentialSmoothing(double _alpha=0.5, double _gamma=1.0) : FilterRunningAverage(_alpha) {
-		setGamma(_gamma);
-	}
-	void setGamma(double _gamma) { gamma=std::max(std::min(_gamma,1.0),0.0); }
-	double getGamma() { return gamma; }
-	double operator= (double _value) { return next(_value); }
-	virtual double next(double y);
+  FilterDoubleExponentialSmoothing(double _alpha = 0.5, double _gamma = 1.0) : FilterRunningAverage(_alpha)
+  {
+    setGamma(_gamma);
+  }
+  void setGamma(double _gamma)
+  {
+    gamma = std::max(std::min(_gamma, 1.0), 0.0);
+  }
+  double getGamma()
+  {
+    return gamma;
+  }
+  double operator=(double _value)
+  {
+    return next(_value);
+  }
+  virtual double next(double y);
 };
 
 /**
@@ -203,37 +264,47 @@ public:
  *
  */
 template <class F>
-class ALVAR_EXPORT FilterArray {
+class ALVAR_EXPORT FilterArray
+{
 protected:
-	double *tmp;
-	std::vector<F> arr;
+  double* tmp;
+  std::vector<F> arr;
+
 public:
-	FilterArray(int size) {
-		tmp = NULL;
-		SetSize(size);
-	}
-	~FilterArray() {
-		delete [] tmp;
-	}
-	size_t GetSize() {
-		return arr.size();
-	}
-	void SetSize(size_t size) {
-		if (tmp) delete [] tmp;
-		tmp = new double[size];
-		arr.resize(size);
-	}
-	F &operator[](size_t i) {
-		return arr[i];
-	}
-	const double *as_double_array(size_t start_i=0) {
-		for (size_t i=0; i<arr.size(); i++) {
-			tmp[i] = arr[i];
-		}
-		return &(tmp[start_i]);
-	}
+  FilterArray(int size)
+  {
+    tmp = NULL;
+    SetSize(size);
+  }
+  ~FilterArray()
+  {
+    delete[] tmp;
+  }
+  size_t GetSize()
+  {
+    return arr.size();
+  }
+  void SetSize(size_t size)
+  {
+    if (tmp)
+      delete[] tmp;
+    tmp = new double[size];
+    arr.resize(size);
+  }
+  F& operator[](size_t i)
+  {
+    return arr[i];
+  }
+  const double* as_double_array(size_t start_i = 0)
+  {
+    for (size_t i = 0; i < arr.size(); i++)
+    {
+      tmp[i] = arr[i];
+    }
+    return &(tmp[start_i]);
+  }
 };
 
-} // namespace alvar
+}  // namespace alvar
 
 #endif

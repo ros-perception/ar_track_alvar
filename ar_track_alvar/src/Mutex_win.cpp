@@ -25,39 +25,37 @@
 
 #include <windows.h>
 
-namespace alvar {
-
+namespace alvar
+{
 class MutexPrivateData
 {
 public:
-    MutexPrivateData()
-        : mCriticalSection()
-    {
-    }
+  MutexPrivateData() : mCriticalSection()
+  {
+  }
 
-    CRITICAL_SECTION mCriticalSection;
+  CRITICAL_SECTION mCriticalSection;
 };
 
-MutexPrivate::MutexPrivate()
-    : d(new MutexPrivateData())
+MutexPrivate::MutexPrivate() : d(new MutexPrivateData())
 {
-    InitializeCriticalSection(&d->mCriticalSection);
+  InitializeCriticalSection(&d->mCriticalSection);
 }
 
 MutexPrivate::~MutexPrivate()
 {
-    DeleteCriticalSection(&d->mCriticalSection);
-    delete d;
+  DeleteCriticalSection(&d->mCriticalSection);
+  delete d;
 }
 
 void MutexPrivate::lock()
 {
-    EnterCriticalSection(&d->mCriticalSection);
+  EnterCriticalSection(&d->mCriticalSection);
 }
 
 void MutexPrivate::unlock()
 {
-    LeaveCriticalSection(&d->mCriticalSection);
+  LeaveCriticalSection(&d->mCriticalSection);
 }
 
-} // namespace alvar
+}  // namespace alvar

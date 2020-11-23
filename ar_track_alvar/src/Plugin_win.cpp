@@ -28,54 +28,53 @@
 #include <windows.h>
 #include <sstream>
 
-namespace alvar {
-
+namespace alvar
+{
 class PluginPrivateData
 {
 public:
-    PluginPrivateData()
-        : mHandle(NULL)
-    {
-    }
-    
-    HINSTANCE mHandle;
+  PluginPrivateData() : mHandle(NULL)
+  {
+  }
+
+  HINSTANCE mHandle;
 };
 
-PluginPrivate::PluginPrivate()
-    : d(new PluginPrivateData())
+PluginPrivate::PluginPrivate() : d(new PluginPrivateData())
 {
 }
 
 PluginPrivate::~PluginPrivate()
 {
-    delete d;
+  delete d;
 }
 
 void PluginPrivate::load(const std::string filename)
 {
-    d->mHandle = LoadLibrary(filename.data());
-    if (!d->mHandle) {
-        std::stringstream message;
-        message << "could not load " << filename
-                << ", error code " << GetLastError();
-        throw AlvarException(message.str().data());
-    }
+  d->mHandle = LoadLibrary(filename.data());
+  if (!d->mHandle)
+  {
+    std::stringstream message;
+    message << "could not load " << filename << ", error code " << GetLastError();
+    throw AlvarException(message.str().data());
+  }
 }
 
 void PluginPrivate::unload()
 {
-    FreeLibrary(d->mHandle);
+  FreeLibrary(d->mHandle);
 }
 
-void *PluginPrivate::resolve(const char *symbol)
+void* PluginPrivate::resolve(const char* symbol)
 {
-    void *address = (void *)GetProcAddress(d->mHandle, symbol);
-    if (!address) {
-        std::stringstream message;
-        message << "could not resolve " << symbol;
-        throw AlvarException(message.str().data());
-    }
-    return address;
+  void* address = (void*)GetProcAddress(d->mHandle, symbol);
+  if (!address)
+  {
+    std::stringstream message;
+    message << "could not resolve " << symbol;
+    throw AlvarException(message.str().data());
+  }
+  return address;
 }
 
-} // namespace alvar
+}  // namespace alvar

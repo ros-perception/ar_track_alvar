@@ -24,20 +24,20 @@
 #ifndef THREADS_PRIVATE_H
 #define THREADS_PRIVATE_H
 
-namespace alvar {
-
+namespace alvar
+{
 class ThreadsPrivateData;
 
 class ThreadsPrivate
 {
 public:
-    ThreadsPrivate();
-    ~ThreadsPrivate();
-    bool create(void *(*method)(void *), void *parameters);
+  ThreadsPrivate();
+  ~ThreadsPrivate();
+  bool create(void* (*method)(void*), void* parameters);
 
-    ThreadsPrivateData *d;
+  ThreadsPrivateData* d;
 };
 
-} // namespace alvar
+}  // namespace alvar
 
 #endif

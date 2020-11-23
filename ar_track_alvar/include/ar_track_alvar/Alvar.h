@@ -29,44 +29,52 @@
  *
  * \section Introduction
  *
- * ALVAR is a software library for creating virtual and augmented reality (AR) applications. ALVAR has
- * been developed by the VTT Technical Research Centre of Finland. ALVAR is released under the terms of
- * the GNU Lesser General Public License, version 2.1, or (at your option) any later version.
+ * ALVAR is a software library for creating virtual and augmented reality (AR)
+ * applications. ALVAR has been developed by the VTT Technical Research Centre
+ * of Finland. ALVAR is released under the terms of the GNU Lesser General
+ * Public License, version 2.1, or (at your option) any later version.
  *
- * ALVAR is designed to be as flexible as possible. It offers high-level tools and methods for creating
- * augmented reality applications with just a few lines of code. The library also includes interfaces
- * for all of the low-level tools and methods, which makes it possible for the user to develop their
- * own solutions using alternative approaches or completely new algorithms.
+ * ALVAR is designed to be as flexible as possible. It offers high-level tools
+ * and methods for creating augmented reality applications with just a few lines
+ * of code. The library also includes interfaces for all of the low-level tools
+ * and methods, which makes it possible for the user to develop their own
+ * solutions using alternative approaches or completely new algorithms.
  *
- * ALVAR is currently provided on Windows and Linux operating systems and only depends on one third
- * party library (OpenCV). ALVAR is independent of any graphical libraries and can be easily integrated
- * into existing applications. The sample applications use GLUT and the demo applications use OpenSceneGraph.
+ * ALVAR is currently provided on Windows and Linux operating systems and only
+ * depends on one third party library (OpenCV). ALVAR is independent of any
+ * graphical libraries and can be easily integrated into existing applications.
+ * The sample applications use GLUT and the demo applications use
+ * OpenSceneGraph.
  *
  * \section Features
  *
- * - Detecting and tracking 2D markers (\e MarkerDetector). Currently two types of square matrix markers
- *   are supported (\e MarkerData and \e MarkerArtoolkit). Future marker types can easily be added. ALVAR
- *   keeps the \e Marker \e Pose estimation as accurate as possible. Furthermore, ALVAR uses some tracking
- *   heuristics to identify markers that are "too far" and to recover from occlusions in the multimarker
- *   case for example.
- * - Using a setup of multiple markers for pose detection (\e MultiMarker). The marker setup coordinates
- *   can be set manually or they can be automatically deduced using various methods (\e MultiMarkerFiltered
- *   and \e MultiMarkerBundle).
- * - Tools for calibrating \e Camera. Distorting and undistorting points, projecting points and finding
- *   exterior orientation using point-sets.
+ * - Detecting and tracking 2D markers (\e MarkerDetector). Currently two types
+ * of square matrix markers are supported (\e MarkerData and \e
+ * MarkerArtoolkit). Future marker types can easily be added. ALVAR keeps the \e
+ * Marker \e Pose estimation as accurate as possible. Furthermore, ALVAR uses
+ * some tracking heuristics to identify markers that are "too far" and to
+ * recover from occlusions in the multimarker case for example.
+ * - Using a setup of multiple markers for pose detection (\e MultiMarker). The
+ * marker setup coordinates can be set manually or they can be automatically
+ * deduced using various methods (\e MultiMarkerFiltered and \e
+ * MultiMarkerBundle).
+ * - Tools for calibrating \e Camera. Distorting and undistorting points,
+ * projecting points and finding exterior orientation using point-sets.
  * - Hiding markers from the view (\e BuildHideTexture and \e DrawTexture).
- * - Several basic filters: \e FilterAverage, \e FilterMedian, \e FilterRunningAverage,
- *   \e FilterDoubleExponentialSmoothing.
- * - \e Kalman filters for sensor fusion: \e Kalman Filter, \e Extended Kalman Filter and Unscented Kalman
- *   Filter (\e KalmanSensor, \e KalmanSensorEkf, \e KalmanEkf, \e UnscentedKalman).
- * - Several methods for tracking using optical flow: \e TrackerPsa , \e TrackerPsaRot , \e TrackerFeatures
- *   and \e TrackerStat.
+ * - Several basic filters: \e FilterAverage, \e FilterMedian, \e
+ * FilterRunningAverage, \e FilterDoubleExponentialSmoothing.
+ * - \e Kalman filters for sensor fusion: \e Kalman Filter, \e Extended Kalman
+ * Filter and Unscented Kalman Filter (\e KalmanSensor, \e KalmanSensorEkf, \e
+ * KalmanEkf, \e UnscentedKalman).
+ * - Several methods for tracking using optical flow: \e TrackerPsa , \e
+ * TrackerPsaRot , \e TrackerFeatures and \e TrackerStat.
  * - etc...
  *
  * \section Platforms
  *
  * ALVAR is officially supported and tested on the following platforms.
- *  - Windows XP 32-bit, Microsoft Visual Studio 2005 (8.0), 2008 (9.0) and 2010 (10.0)
+ *  - Windows XP 32-bit, Microsoft Visual Studio 2005 (8.0), 2008 (9.0) and 2010
+ * (10.0)
  *  - Linux 32-bit, GCC 4.3 and 4.4
  *  - Linux 64-bit, GCC 4.3 and 4.4
  *
@@ -96,61 +104,68 @@
  * - OpenSceneGraph (http://www.openscenegraph.org)
  *
  * \example SampleCamCalib.cpp
- * This is an example of how to use \e ProjPoints and \e Camera classes to perform camera calibration
- * using a chessboard pattern.
+ * This is an example of how to use \e ProjPoints and \e Camera classes to
+ * perform camera calibration using a chessboard pattern.
  *
  * \example SampleCvTestbed.cpp
- * This is an example of how to use the \e CvTestbed and \e Capture classes in order to make quick OpenCV
- * prototype applications.
+ * This is an example of how to use the \e CvTestbed and \e Capture classes in
+ * order to make quick OpenCV prototype applications.
  *
  * \example SampleFilter.cpp
- * This is an example of how to use various filters: \e FilterAverage, \e FilterMedian,
- * \e FilterRunningAverage, \e FilterDoubleExponentialSmoothing and \e Kalman.
+ * This is an example of how to use various filters: \e FilterAverage, \e
+ * FilterMedian, \e FilterRunningAverage, \e FilterDoubleExponentialSmoothing
+ * and \e Kalman.
  *
  * \example SampleIntegralImage.cpp
- * This is an example of how to use the \e IntegralImage and \e IntegralGradient classes for image
- * gradient analysis.
+ * This is an example of how to use the \e IntegralImage and \e IntegralGradient
+ * classes for image gradient analysis.
  *
  * \example SampleLabeling.cpp
- * This is an example of how to label images using \e LabelImage and \e MarchEdge.
+ * This is an example of how to label images using \e LabelImage and \e
+ * MarchEdge.
  *
  * \example SampleMarkerCreator.cpp
- * This is an example that demonstrates the generation of \e MarkerData markers and saving the image
- * using \e SaveMarkerImage.
+ * This is an example that demonstrates the generation of \e MarkerData markers
+ * and saving the image using \e SaveMarkerImage.
  *
  * \example SampleMarkerDetector.cpp
- * This is an example that shows how to detect \e MarkerData markers and visualize them using\e GlutViewer.
+ * This is an example that shows how to detect \e MarkerData markers and
+ * visualize them using\e GlutViewer.
  *
  * \example SampleMarkerHide.cpp
- * This is an example that shows how to detect \e MarkerData markers, visualize them using \e GlutViewer
- * and hide them with \e BuildHideTexture and \e DrawTexture.
+ * This is an example that shows how to detect \e MarkerData markers, visualize
+ * them using \e GlutViewer and hide them with \e BuildHideTexture and \e
+ * DrawTexture.
  *
  * \example SampleMarkerlessCreator.cpp
- * This is an example that demonstrates the use of FernImageDetector to train a Fern classifier.
+ * This is an example that demonstrates the use of FernImageDetector to train a
+ * Fern classifier.
  *
  * \example SampleMarkerlessDetector.cpp
- * This is an example that demonstrates the use of FernImageDetector to detect an image as a marker.
+ * This is an example that demonstrates the use of FernImageDetector to detect
+ * an image as a marker.
  *
  * \example SampleMultiMarker.cpp
- * This is an example that demonstrates the use of a preconfigured \e MultiMarker setup.
+ * This is an example that demonstrates the use of a preconfigured \e
+ * MultiMarker setup.
  *
  * \example SampleMultiMarkerBundle.cpp
- * This is an example that automatically recognising \e MultiMarker setups using \e MultiMarkerFiltered and
- * optimizes it with \e MultiMarkerBundle.
+ * This is an example that automatically recognising \e MultiMarker setups using
+ * \e MultiMarkerFiltered and optimizes it with \e MultiMarkerBundle.
  *
  * \example SampleOptimization.cpp
- * This is an example of how to use the \e Optimization class by fitting curves of increasing degree to
- * random data.
+ * This is an example of how to use the \e Optimization class by fitting curves
+ * of increasing degree to random data.
  *
  * \example SamplePointcloud.cpp
- * This is an example showing how to use \e SimpleSfM for tracking the environment using features in
- * addition to \e MultiMarker.
+ * This is an example showing how to use \e SimpleSfM for tracking the
+ * environment using features in addition to \e MultiMarker.
  *
  * \example SampleTrack.cpp
- * This is an example that shows how to perform tracking of the optical flow using \e TrackerPsa,
- * \e TrackerPsaRot, \e TrackerFeatures or \e TrackerStat.
+ * This is an example that shows how to perform tracking of the optical flow
+ * using \e TrackerPsa, \e TrackerPsaRot, \e TrackerFeatures or \e TrackerStat.
  */
- 
+
 /**
  * \file Alvar.h
  *
@@ -159,20 +174,20 @@
  */
 
 #if defined(WIN32) && !defined(ALVAR_STATIC)
-    #ifdef ALVAR_BUILD
-        #define ALVAR_EXPORT __declspec(dllexport)
-    #else
-        #define ALVAR_EXPORT __declspec(dllimport)
-    #endif
+#ifdef ALVAR_BUILD
+#define ALVAR_EXPORT __declspec(dllexport)
 #else
-	#define ALVAR_EXPORT
+#define ALVAR_EXPORT __declspec(dllimport)
+#endif
+#else
+#define ALVAR_EXPORT
 #endif
 
 /**
  * \brief Main ALVAR namespace.
  */
-namespace alvar {
-
+namespace alvar
+{
 /**
  * \brief Major version number.
  */
@@ -193,35 +208,35 @@ static const int ALVAR_VERSION_PATCH = 0;
  *
  * The tag contains alpha, beta and release candidate versions.
  */
-static const char *ALVAR_VERSION_TAG = "";
+static const char* ALVAR_VERSION_TAG = "";
 
 /**
  * \brief Revision version string.
  *
  * The revision contains an identifier from the source control system.
  */
-static const char *ALVAR_VERSION_REVISION = "";
+static const char* ALVAR_VERSION_REVISION = "";
 
 /**
  * \brief Entire version string.
  */
-static const char *ALVAR_VERSION = "2.0.0";
+static const char* ALVAR_VERSION = "2.0.0";
 
 /**
  * \brief Entire version string without dots.
  */
-static const char *ALVAR_VERSION_NODOTS = "200";
+static const char* ALVAR_VERSION_NODOTS = "200";
 
 /**
  * \brief Date the library was built.
  */
-static const char *ALVAR_DATE = "2012-06-20";
+static const char* ALVAR_DATE = "2012-06-20";
 
 /**
  * \brief System the library was built on.
  */
-static const char *ALVAR_SYSTEM = "Linux 3.2.0-24-generic x86_64";
+static const char* ALVAR_SYSTEM = "Linux 3.2.0-24-generic x86_64";
 
-}
+}  // namespace alvar
 
 #endif

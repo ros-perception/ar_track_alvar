@@ -25,36 +25,35 @@
 
 #include "ar_track_alvar/DirectoryIterator_private.h"
 
-namespace alvar {
-
-DirectoryIterator::DirectoryIterator(const std::string &path)
-    : d(new DirectoryIteratorPrivate(path))
+namespace alvar
+{
+DirectoryIterator::DirectoryIterator(const std::string& path) : d(new DirectoryIteratorPrivate(path))
 {
 }
 
 DirectoryIterator::~DirectoryIterator()
 {
-    delete d;
+  delete d;
 }
 
 bool DirectoryIterator::hasNext()
 {
-    return d->hasNext();
+  return d->hasNext();
 }
 
 std::string DirectoryIterator::next()
 {
-    return d->next();
+  return d->next();
 }
 
 std::string DirectoryIterator::currentEntry()
 {
-    return d->mEntry;
+  return d->mEntry;
 }
 
 std::string DirectoryIterator::currentPath()
 {
-    return d->mDirectory + d->mEntry;
+  return d->mDirectory + d->mEntry;
 }
 
-} // namespace alvar
+}  // namespace alvar

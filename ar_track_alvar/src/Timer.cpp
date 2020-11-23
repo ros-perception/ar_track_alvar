@@ -25,26 +25,25 @@
 
 #include "Timer_private.h"
 
-namespace alvar {
-
-Timer::Timer()
-    : d(new TimerPrivate())
+namespace alvar
+{
+Timer::Timer() : d(new TimerPrivate())
 {
 }
 
 Timer::~Timer()
 {
-    delete d;
+  delete d;
 }
 
 void Timer::start()
 {
-    return d->start();
+  return d->start();
 }
 
 double Timer::stop()
 {
-    return d->stop();
+  return d->stop();
 }
 
-} // namespace alvar
+}  // namespace alvar

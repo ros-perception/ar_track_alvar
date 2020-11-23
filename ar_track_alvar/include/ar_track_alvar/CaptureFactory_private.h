@@ -30,38 +30,38 @@
 
 #include "Plugin.h"
 
-namespace alvar {
-
+namespace alvar
+{
 class CapturePlugin;
 
 class CaptureFactoryPrivate
 {
 public:
-    CaptureFactoryPrivate();
-    ~CaptureFactoryPrivate();
+  CaptureFactoryPrivate();
+  ~CaptureFactoryPrivate();
 
-    void setupPluginPaths();
-    void parseEnvironmentVariable(const std::string &variable);
-    std::string pluginPrefix();
-    std::string pluginExtension();
+  void setupPluginPaths();
+  void parseEnvironmentVariable(const std::string& variable);
+  std::string pluginPrefix();
+  std::string pluginExtension();
 
-    void loadPlugins();
-    void loadPlugin(const std::string &captureType);
-    void loadPlugin(const std::string &captureType, const std::string &filename);
-    CapturePlugin *getPlugin(const std::string &captureType);
+  void loadPlugins();
+  void loadPlugin(const std::string& captureType);
+  void loadPlugin(const std::string& captureType, const std::string& filename);
+  CapturePlugin* getPlugin(const std::string& captureType);
 
-    typedef std::vector<std::string> PluginPathsVector;
-    PluginPathsVector mPluginPaths;
-    std::string mPluginPrefix;
-    std::string mPluginPostfix;
+  typedef std::vector<std::string> PluginPathsVector;
+  PluginPathsVector mPluginPaths;
+  std::string mPluginPrefix;
+  std::string mPluginPostfix;
 
-    bool mLoadedAllPlugins;
-    typedef std::map<std::string, Plugin> PluginMap;
-    PluginMap mPluginMap;
-    typedef std::map<std::string, CapturePlugin *> CapturePluginMap;
-    CapturePluginMap mCapturePluginMap;
+  bool mLoadedAllPlugins;
+  typedef std::map<std::string, Plugin> PluginMap;
+  PluginMap mPluginMap;
+  typedef std::map<std::string, CapturePlugin*> CapturePluginMap;
+  CapturePluginMap mCapturePluginMap;
 };
 
-} // namespace alvar
+}  // namespace alvar
 
 #endif

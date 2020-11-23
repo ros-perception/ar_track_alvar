@@ -32,8 +32,8 @@
 
 #include "Alvar.h"
 
-namespace alvar {
-
+namespace alvar
+{
 class ThreadsPrivate;
 
 /**
@@ -44,28 +44,28 @@ class ThreadsPrivate;
 class ALVAR_EXPORT Threads
 {
 public:
-    /**
-     * \brief Constructor.
-     */
-    Threads();
+  /**
+   * \brief Constructor.
+   */
+  Threads();
 
-    /**
-     * \brief Destructor.
-     */
-    ~Threads();
+  /**
+   * \brief Destructor.
+   */
+  ~Threads();
 
-    /**
-     * \brief Creates a new thread and returns true on success.
-     *
-     * \param method The method that the thread will execute.
-     * \param parameters The parameters sent to the method.
-     */
-    bool create(void *(*method)(void *), void *parameters);
+  /**
+   * \brief Creates a new thread and returns true on success.
+   *
+   * \param method The method that the thread will execute.
+   * \param parameters The parameters sent to the method.
+   */
+  bool create(void* (*method)(void*), void* parameters);
 
 private:
-    ThreadsPrivate *d;
+  ThreadsPrivate* d;
 };
 
-} // namespace alvar
+}  // namespace alvar
 
 #endif

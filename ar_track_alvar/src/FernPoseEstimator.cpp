@@ -23,12 +23,9 @@
 
 #include "FernPoseEstimator.h"
 
-namespace alvar {
-
-FernPoseEstimator::FernPoseEstimator()
-    : mPose()
-    , mCamera()
-    , mCameraEC()
+namespace alvar
+{
+FernPoseEstimator::FernPoseEstimator() : mPose(), mCamera(), mCameraEC()
 {
 }
 
@@ -38,46 +35,49 @@ FernPoseEstimator::~FernPoseEstimator()
 
 Pose FernPoseEstimator::pose() const
 {
-	return mPose;
+  return mPose;
 }
 
 Camera FernPoseEstimator::camera() const
 {
-	return mCamera;
+  return mCamera;
 }
 
-bool FernPoseEstimator::setCalibration(const std::string &filename, int width, int height)
+bool FernPoseEstimator::setCalibration(const std::string& filename, int width, int height)
 {
-    bool r1 = mCamera.SetCalib(filename.c_str(), width, height);
-	bool r2 = mCameraEC.SetCalib(filename.c_str(), width, height);
-    return r1 && r2;
+  bool r1 = mCamera.SetCalib(filename.c_str(), width, height);
+  bool r2 = mCameraEC.SetCalib(filename.c_str(), width, height);
+  return r1 && r2;
 }
 
 void FernPoseEstimator::setResolution(int width, int height)
 {
-    mCamera.SetRes(width, height);
-	mCameraEC.SetRes(width, height);
+  mCamera.SetRes(width, height);
+  mCameraEC.SetRes(width, height);
 }
 
-void FernPoseEstimator::calculateFromPointCorrespondences(FernPoseEstimator::ModelPointVector &mpts, FernPoseEstimator::ImagePointVector &ipts)
+void FernPoseEstimator::calculateFromPointCorrespondences(FernPoseEstimator::ModelPointVector& mpts,
+                                                          FernPoseEstimator::ImagePointVector& ipts)
 {
-	mCamera.CalcExteriorOrientation(mpts, ipts, &mPose); // TODO replace camera->cameraec
+  mCamera.CalcExteriorOrientation(mpts, ipts,
+                                  &mPose);  // TODO replace camera->cameraec
 }
 
-void FernPoseEstimator::updateFromTrackedPoints(FernPoseEstimator::ExternalContainerMap &container)
+void FernPoseEstimator::updateFromTrackedPoints(FernPoseEstimator::ExternalContainerMap& container)
 {
-	mCameraEC.UpdatePose(container, &mPose);
+  mCameraEC.UpdatePose(container, &mPose);
 }
 
-void FernPoseEstimator::extractPlaneCoordinates(FernPoseEstimator::ExternalContainerMap &container)
+void FernPoseEstimator::extractPlaneCoordinates(FernPoseEstimator::ExternalContainerMap& container)
 {
-	ExternalContainerMap::iterator iter = container.begin();
-	ExternalContainerMap::iterator iter_end = container.end();
-	for(; iter != iter_end; ++iter) {
-		alvar::ExternalContainer &f = iter->second;
-		mCameraEC.Get3dOnPlane(&mPose, f.p2d, f.p3d);
-		f.has_p3d = true;
-	}
+  ExternalContainerMap::iterator iter = container.begin();
+  ExternalContainerMap::iterator iter_end = container.end();
+  for (; iter != iter_end; ++iter)
+  {
+    alvar::ExternalContainer& f = iter->second;
+    mCameraEC.Get3dOnPlane(&mPose, f.p2d, f.p3d);
+    f.has_p3d = true;
+  }
 }
 
-} // namespace alvar
+}  // namespace alvar

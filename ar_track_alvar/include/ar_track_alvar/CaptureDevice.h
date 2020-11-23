@@ -34,56 +34,57 @@
 
 #include <string>
 
-namespace alvar {
-
+namespace alvar
+{
 /**
  * \brief CaptureDevice holder for camera information.
  *
- * CaptureDevice contains the desired backend, the id and description of the camera.
+ * CaptureDevice contains the desired backend, the id and description of the
+ * camera.
  */
 class ALVAR_EXPORT CaptureDevice
 {
 public:
-    /**
-     * \brief Constructor.
-     *
-     * \param captureType The type of capture backend.
-     * \param id The id of the camera.
-     * \param description A human readable description of the camera.
-     */
-    CaptureDevice(const std::string captureType, const std::string id, const std::string description = "");
+  /**
+   * \brief Constructor.
+   *
+   * \param captureType The type of capture backend.
+   * \param id The id of the camera.
+   * \param description A human readable description of the camera.
+   */
+  CaptureDevice(const std::string captureType, const std::string id, const std::string description = "");
 
-    /**
-     * \brief Destructor.
-     */
-    ~CaptureDevice();
+  /**
+   * \brief Destructor.
+   */
+  ~CaptureDevice();
 
-    /**
-     * \brief The type of capture backend.
-     */
-    std::string captureType() const;
+  /**
+   * \brief The type of capture backend.
+   */
+  std::string captureType() const;
 
-    /**
-     * \brief The id of the camera.
-     */
-    std::string id() const;
+  /**
+   * \brief The id of the camera.
+   */
+  std::string id() const;
 
-    /**
-     * \brief The description of the camera.
-     */
-    std::string description() const;
+  /**
+   * \brief The description of the camera.
+   */
+  std::string description() const;
 
-    /**
-     * \brief A unique name consisting of the capture type and the id.
-     */
-    std::string uniqueName() const;
+  /**
+   * \brief A unique name consisting of the capture type and the id.
+   */
+  std::string uniqueName() const;
 
 private:
-    std::string mCaptureType;
-    std::string mId;
-    std::string mDescription;
+  std::string mCaptureType;
+  std::string mId;
+  std::string mDescription;
 };
 
-} // namespace alvar
+}  // namespace alvar
 
 #endif

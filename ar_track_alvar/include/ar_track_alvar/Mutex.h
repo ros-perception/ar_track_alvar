@@ -32,8 +32,8 @@
 
 #include "Alvar.h"
 
-namespace alvar {
-
+namespace alvar
+{
 class MutexPrivate;
 
 /**
@@ -44,33 +44,33 @@ class MutexPrivate;
 class ALVAR_EXPORT Mutex
 {
 public:
-    /**
-     * \brief Constructor.
-     */
-    Mutex();
+  /**
+   * \brief Constructor.
+   */
+  Mutex();
 
-    /**
-     * \brief Destructor.
-     */
-    ~Mutex();
+  /**
+   * \brief Destructor.
+   */
+  ~Mutex();
 
-    /**
-     * \brief Locks the mutex.
-     *
-     * If the mutex is already locked by another thread, this method will
-     * block until the other thread unlocks the mutex.
-     */
-    void lock();
+  /**
+   * \brief Locks the mutex.
+   *
+   * If the mutex is already locked by another thread, this method will
+   * block until the other thread unlocks the mutex.
+   */
+  void lock();
 
-    /**
-     * \brief Unlocks the mutex.
-     */
-    void unlock();
+  /**
+   * \brief Unlocks the mutex.
+   */
+  void unlock();
 
 private:
-    MutexPrivate *d;
+  MutexPrivate* d;
 };
 
-} // namespace alvar
+}  // namespace alvar
 
 #endif

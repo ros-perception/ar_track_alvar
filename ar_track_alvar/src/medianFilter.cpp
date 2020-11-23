@@ -29,8 +29,8 @@
  */
 
 /**
- * \file 
- * 
+ * \file
+ *
  * N-dimensional median filter for marker poses
  *
  * \author Scott Niekum
@@ -40,51 +40,61 @@
 
 namespace ar_track_alvar
 {
-  using namespace alvar;
+using namespace alvar;
 
-  MedianFilter::MedianFilter(int n){
-     median_n = n;
-     median_ind = 0;
-     median_init = false;
-     median_poses = new Pose[median_n];
+MedianFilter::MedianFilter(int n)
+{
+  median_n = n;
+  median_ind = 0;
+  median_init = false;
+  median_poses = new Pose[median_n];
+}
+
+void MedianFilter::addPose(const Pose& new_pose)
+{
+  median_poses[median_ind] = new_pose;
+  median_ind = (median_ind + 1) % median_n;
+}
+
+void MedianFilter::getMedian(Pose& ret_pose)
+{
+  if (!median_init)
+  {
+    if (median_ind == median_n - 1)
+      median_init = true;
+    ret_pose = median_poses[median_ind - 1];
   }
 
-  void MedianFilter::addPose(const Pose &new_pose){
-      median_poses[median_ind] = new_pose;
-      median_ind = (median_ind+1) % median_n;
-  }
-
-  void MedianFilter::getMedian(Pose &ret_pose){
-    if(!median_init){
-      if(median_ind == median_n-1)
-	median_init = true;
-      ret_pose = median_poses[median_ind-1];
-    }
-
-    else{
-      double min_dist = 0;
-      int min_ind = 0;
-      for(int i=0; i<median_n; i++){
-	double total_dist = 0;
-	for(int j=0; j<median_n; j++){
-	  total_dist += pow(median_poses[i].translation[0] - median_poses[j].translation[0], 2);
-	  total_dist += pow(median_poses[i].translation[1] - median_poses[j].translation[1], 2);
-	  total_dist += pow(median_poses[i].translation[2] - median_poses[j].translation[2], 2);
-	  total_dist += pow(median_poses[i].quaternion[0] - median_poses[j].quaternion[0], 2);
-	  total_dist += pow(median_poses[i].quaternion[1] - median_poses[j].quaternion[1], 2);
-	  total_dist += pow(median_poses[i].quaternion[2] - median_poses[j].quaternion[2], 2);
-	  total_dist += pow(median_poses[i].quaternion[3] - median_poses[j].quaternion[3], 2);
-	}
-	if(i==0) min_dist = total_dist;
-	else{
-	  if(total_dist < min_dist){
-	    min_dist = total_dist;
-	    min_ind = i;
-	  }
-	}
+  else
+  {
+    double min_dist = 0;
+    int min_ind = 0;
+    for (int i = 0; i < median_n; i++)
+    {
+      double total_dist = 0;
+      for (int j = 0; j < median_n; j++)
+      {
+        total_dist += pow(median_poses[i].translation[0] - median_poses[j].translation[0], 2);
+        total_dist += pow(median_poses[i].translation[1] - median_poses[j].translation[1], 2);
+        total_dist += pow(median_poses[i].translation[2] - median_poses[j].translation[2], 2);
+        total_dist += pow(median_poses[i].quaternion[0] - median_poses[j].quaternion[0], 2);
+        total_dist += pow(median_poses[i].quaternion[1] - median_poses[j].quaternion[1], 2);
+        total_dist += pow(median_poses[i].quaternion[2] - median_poses[j].quaternion[2], 2);
+        total_dist += pow(median_poses[i].quaternion[3] - median_poses[j].quaternion[3], 2);
       }
-      ret_pose = median_poses[min_ind];
+      if (i == 0)
+        min_dist = total_dist;
+      else
+      {
+        if (total_dist < min_dist)
+        {
+          min_dist = total_dist;
+          min_ind = i;
+        }
+      }
     }
+    ret_pose = median_poses[min_ind];
   }
-  
-} //namespace
+}
+
+}  // namespace ar_track_alvar

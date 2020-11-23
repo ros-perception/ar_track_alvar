@@ -24,21 +24,21 @@
 #ifndef TIMER_PRIVATE_H
 #define TIMER_PRIVATE_H
 
-namespace alvar {
-
+namespace alvar
+{
 class TimerPrivateData;
 
 class TimerPrivate
 {
 public:
-    TimerPrivate();
-    ~TimerPrivate();
-    void start();
-    double stop();
+  TimerPrivate();
+  ~TimerPrivate();
+  void start();
+  double stop();
 
-    TimerPrivateData *d;
+  TimerPrivateData* d;
 };
 
-} // namespace alvar
+}  // namespace alvar
 
 #endif

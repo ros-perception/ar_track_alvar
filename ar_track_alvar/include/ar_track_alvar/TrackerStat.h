@@ -34,51 +34,55 @@
  * \brief This file implements a statistical tracker.
  */
 
-namespace alvar {
-
+namespace alvar
+{
 /**
- * \brief \e TrackerStat deduces the optical flow based on tracked features using Seppo Valli's statistical tracking.
+ * \brief \e TrackerStat deduces the optical flow based on tracked features
+ * using Seppo Valli's statistical tracking.
  */
-class ALVAR_EXPORT TrackerStat : public Tracker {
+class ALVAR_EXPORT TrackerStat : public Tracker
+{
 protected:
-	TrackerFeatures f;
-	HistogramSubpixel hist;
+  TrackerFeatures f;
+  HistogramSubpixel hist;
+
 public:
-	/** \brief \e Track result x-translation in pixels */
-	double xd;
-	/** \brief \e Track result y-translation in pixels */
-	double yd;
-	/** \brief Constructor */
-	TrackerStat(int binsize=8);
-	/** \brief Reset */
-	void Reset();
-	/**
-	 * \brief Translation tracker (the simplest possible)
-	 */
-	double Track(IplImage *img);
-	virtual void Compensate(double *x, double *y);
+  /** \brief \e Track result x-translation in pixels */
+  double xd;
+  /** \brief \e Track result y-translation in pixels */
+  double yd;
+  /** \brief Constructor */
+  TrackerStat(int binsize = 8);
+  /** \brief Reset */
+  void Reset();
+  /**
+   * \brief Translation tracker (the simplest possible)
+   */
+  double Track(IplImage* img);
+  virtual void Compensate(double* x, double* y);
 };
 
 /**
- * \brief TrackerStatRot implements a slightly extended version of TrackerStat which can also detect sideways rotation.
+ * \brief TrackerStatRot implements a slightly extended version of TrackerStat
+ * which can also detect sideways rotation.
  */
-class ALVAR_EXPORT TrackerStatRot : public TrackerStat {
-	int x_res, y_res;
-	HistogramSubpixel hist_rot;
+class ALVAR_EXPORT TrackerStatRot : public TrackerStat
+{
+  int x_res, y_res;
+  HistogramSubpixel hist_rot;
+
 public:
-	/** \brief \e Track result rotation in degrees */
-	double rotd;
-	/** \brief Constructor */
-	TrackerStatRot(int binsize=8, int binsize_rot=3);
-	/**
-	 * \brief Translation + rotation tracker
-	 */
-	double Track(IplImage *img);
-	virtual void Compensate(double *x, double *y);
+  /** \brief \e Track result rotation in degrees */
+  double rotd;
+  /** \brief Constructor */
+  TrackerStatRot(int binsize = 8, int binsize_rot = 3);
+  /**
+   * \brief Translation + rotation tracker
+   */
+  double Track(IplImage* img);
+  virtual void Compensate(double* x, double* y);
 };
 
-} // namespace alvar
+}  // namespace alvar
 
 #endif
-
-

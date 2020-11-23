@@ -32,59 +32,61 @@
  * \brief This file implements a PSA tracker.
  */
 
-namespace alvar {
-
+namespace alvar
+{
 /**
- * \brief \e TrackerPsa implements a very simple PSA tracker 
+ * \brief \e TrackerPsa implements a very simple PSA tracker
  *
- * (See Drab, Stephan A. & Artner, Nicole M. "Motion Detection as Interaction Technique for Games & Applications on Mobile Devices" PERMID 2005) 
+ * (See Drab, Stephan A. & Artner, Nicole M. "Motion Detection as Interaction
+ * Technique for Games & Applications on Mobile Devices" PERMID 2005)
  */
-class ALVAR_EXPORT TrackerPsa : public Tracker {
+class ALVAR_EXPORT TrackerPsa : public Tracker
+{
 protected:
-	int max_shift;
-	int x_res, y_res;
-	long *hor, *horprev;
-	long *ver, *verprev;
-	long framecount;
+  int max_shift;
+  int x_res, y_res;
+  long *hor, *horprev;
+  long *ver, *verprev;
+  long framecount;
 
 public:
-	/** \brief \e Track result x-translation in pixels */
-	double xd;
-	/** \brief \e Track result y-translation in pixels */
-	double yd;
-	/** \brief Constructor */
-	TrackerPsa(int _max_shift = 50);
-	/** \brief Destructor */
-	~TrackerPsa();
-	/** \brief Track using PSA */
-	double Track(IplImage *img);
+  /** \brief \e Track result x-translation in pixels */
+  double xd;
+  /** \brief \e Track result y-translation in pixels */
+  double yd;
+  /** \brief Constructor */
+  TrackerPsa(int _max_shift = 50);
+  /** \brief Destructor */
+  ~TrackerPsa();
+  /** \brief Track using PSA */
+  double Track(IplImage* img);
 
-	virtual void Compensate(double *x, double *y);
+  virtual void Compensate(double* x, double* y);
 };
 
 /**
- * \brief \e TrackerPsaRot implements a slightly extended version of a \e TrackerPsa which can also detect sideways rotation
+ * \brief \e TrackerPsaRot implements a slightly extended version of a \e
+ * TrackerPsa which can also detect sideways rotation
  */
-class ALVAR_EXPORT TrackerPsaRot : public TrackerPsa {
+class ALVAR_EXPORT TrackerPsaRot : public TrackerPsa
+{
 protected:
-	double *rot, *rotprev;
-	int *rot_count;
+  double *rot, *rotprev;
+  int* rot_count;
 
 public:
-	/** \brief \e Track result rotation in degrees */
-	double rotd;
-	/** \brief Constructor */
-	TrackerPsaRot(int _max_shift = 50);
-	/** \brief Destructor */
-	~TrackerPsaRot();
-	/** \brief Track using PSA with rotation*/
-	double Track(IplImage *img);
+  /** \brief \e Track result rotation in degrees */
+  double rotd;
+  /** \brief Constructor */
+  TrackerPsaRot(int _max_shift = 50);
+  /** \brief Destructor */
+  ~TrackerPsaRot();
+  /** \brief Track using PSA with rotation*/
+  double Track(IplImage* img);
 
-	virtual void Compensate(double *x, double *y);
+  virtual void Compensate(double* x, double* y);
 };
 
-} // namespace alvar
+}  // namespace alvar
 
 #endif
-
-

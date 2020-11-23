@@ -44,31 +44,26 @@
 
 using namespace cv;
 
-namespace alvar{
-
+namespace alvar
+{
 /**
  * \brief FernClassifier subclass that implements binary reading and writting.
  */
 class FernClassifierWrapper : public FernClassifier
 {
 public:
-    FernClassifierWrapper();
-    FernClassifierWrapper(const FileNode &fileNode);
-    FernClassifierWrapper(const vector<vector<Point2f> > &points,
-                          const vector<Mat> &referenceImages,
-                          const vector<vector<int> > &labels = vector<vector<int> >(),
-                          int _nclasses = 0,
-                          int _patchSize = PATCH_SIZE,
-                          int _signatureSize = DEFAULT_SIGNATURE_SIZE,
-                          int _nstructs = DEFAULT_STRUCTS,
-                          int _structSize = DEFAULT_STRUCT_SIZE,
-                          int _nviews = DEFAULT_VIEWS,
-                          int _compressionMethod = COMPRESSION_NONE,
-                          const PatchGenerator &patchGenerator = PatchGenerator());
-    virtual ~FernClassifierWrapper();
+  FernClassifierWrapper();
+  FernClassifierWrapper(const FileNode& fileNode);
+  FernClassifierWrapper(const vector<vector<Point2f> >& points, const vector<Mat>& referenceImages,
+                        const vector<vector<int> >& labels = vector<vector<int> >(), int _nclasses = 0,
+                        int _patchSize = PATCH_SIZE, int _signatureSize = DEFAULT_SIGNATURE_SIZE,
+                        int _nstructs = DEFAULT_STRUCTS, int _structSize = DEFAULT_STRUCT_SIZE,
+                        int _nviews = DEFAULT_VIEWS, int _compressionMethod = COMPRESSION_NONE,
+                        const PatchGenerator& patchGenerator = PatchGenerator());
+  virtual ~FernClassifierWrapper();
 
-    virtual void readBinary(std::fstream &stream);
-    virtual void writeBinary(std::fstream &stream) const;
+  virtual void readBinary(std::fstream& stream);
+  virtual void writeBinary(std::fstream& stream) const;
 };
 
 /**
@@ -76,41 +71,41 @@ public:
  */
 class ALVAR_EXPORT FernImageDetector
 {
-public:	
-    FernImageDetector(const bool visualize = false);
-    ~FernImageDetector();
-	
-    void imagePoints(vector<CvPoint2D64f> &points);
-    void modelPoints(vector<CvPoint3D64f> &points, bool normalize = true);
+public:
+  FernImageDetector(const bool visualize = false);
+  ~FernImageDetector();
 
-    cv::Size size();
-    cv::Mat homography();
-    double inlierRatio();
+  void imagePoints(vector<CvPoint2D64f>& points);
+  void modelPoints(vector<CvPoint3D64f>& points, bool normalize = true);
 
-    void train(const std::string &filename);
-    void train(Mat &image);
-    void findFeatures(Mat &image, bool planeAssumption = true);
-	
-    bool read(const std::string &filename, const bool binary = true);
-    bool write(const std::string &filename, const bool binary = true);
+  cv::Size size();
+  cv::Mat homography();
+  double inlierRatio();
+
+  void train(const std::string& filename);
+  void train(Mat& image);
+  void findFeatures(Mat& image, bool planeAssumption = true);
+
+  bool read(const std::string& filename, const bool binary = true);
+  bool write(const std::string& filename, const bool binary = true);
 
 private:
-    PatchGenerator mPatchGenerator;
-    LDetector mLDetector;
-    std::vector<FernClassifierWrapper> mClassifier;
+  PatchGenerator mPatchGenerator;
+  LDetector mLDetector;
+  std::vector<FernClassifierWrapper> mClassifier;
 
-    vector<KeyPoint> mKeyPoints;
-    vector<cv::Point2f> mImagePoints;
-    vector<cv::Point2f> mModelPoints;
+  vector<KeyPoint> mKeyPoints;
+  vector<cv::Point2f> mImagePoints;
+  vector<cv::Point2f> mModelPoints;
 
-    bool mVisualize;
-    std::vector<Mat> mObjects;
-    cv::Size mSize;
-    cv::Mat mCorrespondences;
-    cv::Mat mHomography;
-    double mInlierRatio;
+  bool mVisualize;
+  std::vector<Mat> mObjects;
+  cv::Size mSize;
+  cv::Mat mCorrespondences;
+  cv::Mat mHomography;
+  double mInlierRatio;
 };
 
-} // namespace alvar
+}  // namespace alvar
 
 #endif

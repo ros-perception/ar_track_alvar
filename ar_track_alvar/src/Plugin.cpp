@@ -25,42 +25,39 @@
 
 #include "ar_track_alvar/Plugin_private.h"
 
-namespace alvar {
-
-Plugin::Plugin(const std::string filename)
-    : d(new PluginPrivate())
-    , mReferenceCount(new int(1))
+namespace alvar
 {
-    d->load(filename);
+Plugin::Plugin(const std::string filename) : d(new PluginPrivate()), mReferenceCount(new int(1))
+{
+  d->load(filename);
 }
 
-Plugin::Plugin(const Plugin &plugin)
-    : d(plugin.d)
-    , mReferenceCount(plugin.mReferenceCount)
+Plugin::Plugin(const Plugin& plugin) : d(plugin.d), mReferenceCount(plugin.mReferenceCount)
 {
-    ++*mReferenceCount;
+  ++*mReferenceCount;
 }
 
-Plugin &Plugin::operator=(const Plugin &plugin)
+Plugin& Plugin::operator=(const Plugin& plugin)
 {
-    d = plugin.d;
-    mReferenceCount = plugin.mReferenceCount;
-    ++*mReferenceCount;
-    return *this;
+  d = plugin.d;
+  mReferenceCount = plugin.mReferenceCount;
+  ++*mReferenceCount;
+  return *this;
 }
 
 Plugin::~Plugin()
 {
-    if (!--*mReferenceCount) {
-        d->unload();
-        delete d;
-        delete mReferenceCount;
-    }
+  if (!--*mReferenceCount)
+  {
+    d->unload();
+    delete d;
+    delete mReferenceCount;
+  }
 }
 
-void *Plugin::resolve(const char *symbol)
+void* Plugin::resolve(const char* symbol)
 {
-    return d->resolve(symbol);
+  return d->resolve(symbol);
 }
 
-} // namespace alvar
+}  // namespace alvar

@@ -25,89 +25,92 @@
 
 #include <sstream>
 
-namespace alvar {
-namespace plugins {
-
+namespace alvar
+{
+namespace plugins
+{
 CaptureHighgui::CaptureHighgui(const CaptureDevice captureDevice)
-    : Capture(captureDevice)
-    , mVideoCapture()
-    , mMatrix()
-    , mImage()
+  : Capture(captureDevice), mVideoCapture(), mMatrix(), mImage()
 {
 }
 
 CaptureHighgui::~CaptureHighgui()
 {
-    stop();
+  stop();
 }
 
 void CaptureHighgui::setResolution(const unsigned long xResolution, const unsigned long yResolution)
 {
-    if (mVideoCapture.isOpened()) {
-        mVideoCapture.set(CV_CAP_PROP_FRAME_WIDTH, xResolution);
-        mVideoCapture.set(CV_CAP_PROP_FRAME_HEIGHT, yResolution);
-        mXResolution = (int)mVideoCapture.get(CV_CAP_PROP_FRAME_WIDTH);
-        mYResolution = (int)mVideoCapture.get(CV_CAP_PROP_FRAME_HEIGHT);
-    }
+  if (mVideoCapture.isOpened())
+  {
+    mVideoCapture.set(CV_CAP_PROP_FRAME_WIDTH, xResolution);
+    mVideoCapture.set(CV_CAP_PROP_FRAME_HEIGHT, yResolution);
+    mXResolution = (int)mVideoCapture.get(CV_CAP_PROP_FRAME_WIDTH);
+    mYResolution = (int)mVideoCapture.get(CV_CAP_PROP_FRAME_HEIGHT);
+  }
 }
 
 bool CaptureHighgui::start()
 {
-    if (isCapturing()) {
-        return isCapturing();
-    }
-
-    std::istringstream convert(captureDevice().id());
-    int id;
-    convert >> id;
-
-    mVideoCapture.open(id);
-    if (mVideoCapture.isOpened()) {
-        mIsCapturing = true;
-    }
-
+  if (isCapturing())
+  {
     return isCapturing();
+  }
+
+  std::istringstream convert(captureDevice().id());
+  int id;
+  convert >> id;
+
+  mVideoCapture.open(id);
+  if (mVideoCapture.isOpened())
+  {
+    mIsCapturing = true;
+  }
+
+  return isCapturing();
 }
 
 void CaptureHighgui::stop()
 {
-    if (isCapturing()) {
-        mVideoCapture.release();
-        mIsCapturing = false;
-    }
+  if (isCapturing())
+  {
+    mVideoCapture.release();
+    mIsCapturing = false;
+  }
 }
 
-IplImage *CaptureHighgui::captureImage()
+IplImage* CaptureHighgui::captureImage()
 {
-    if (!isCapturing()) {
-        return NULL;
-    }
-    if (!mVideoCapture.grab()) {
-        return NULL;
-    }
-    mVideoCapture.retrieve(mMatrix);
-    mImage = mMatrix;
-    return &mImage;
+  if (!isCapturing())
+  {
+    return NULL;
+  }
+  if (!mVideoCapture.grab())
+  {
+    return NULL;
+  }
+  mVideoCapture.retrieve(mMatrix);
+  mImage = mMatrix;
+  return &mImage;
 }
 
 bool CaptureHighgui::showSettingsDialog()
 {
-    // TODO: implement this method
-    return false;
+  // TODO: implement this method
+  return false;
 }
 
 std::string CaptureHighgui::SerializeId()
 {
-    return "CaptureHighgui";
+  return "CaptureHighgui";
 }
 
-bool CaptureHighgui::Serialize(Serialization *serialization)
+bool CaptureHighgui::Serialize(Serialization* serialization)
 {
-    return false;
+  return false;
 }
 
-CapturePluginHighgui::CapturePluginHighgui(const std::string &captureType)
-    : CapturePlugin(captureType)
+CapturePluginHighgui::CapturePluginHighgui(const std::string& captureType) : CapturePlugin(captureType)
 {
 }
 
@@ -117,48 +120,53 @@ CapturePluginHighgui::~CapturePluginHighgui()
 
 CapturePlugin::CaptureDeviceVector CapturePluginHighgui::enumerateDevices()
 {
-    CaptureDeviceVector devices;
+  CaptureDeviceVector devices;
 
-    bool loop = true;
-    int id = 0;
-    cv::VideoCapture videoCapture;
-    
-    while (loop) {
-        std::stringstream convert;
-        convert << id;
-        CaptureDevice captureDevice(mCaptureType, convert.str());
-        
-        videoCapture.open(id);
-        if (videoCapture.isOpened()) {
-            int width = (int)videoCapture.get(CV_CAP_PROP_FRAME_WIDTH);
-            int height = (int)videoCapture.get(CV_CAP_PROP_FRAME_HEIGHT);
-            if (width > 0 && height > 0) {
-                devices.push_back(captureDevice);
-            }
-            else {
-                loop = false;
-            }
-        }
-        else {
-            loop = false;
-        }
+  bool loop = true;
+  int id = 0;
+  cv::VideoCapture videoCapture;
 
-        id++;
+  while (loop)
+  {
+    std::stringstream convert;
+    convert << id;
+    CaptureDevice captureDevice(mCaptureType, convert.str());
+
+    videoCapture.open(id);
+    if (videoCapture.isOpened())
+    {
+      int width = (int)videoCapture.get(CV_CAP_PROP_FRAME_WIDTH);
+      int height = (int)videoCapture.get(CV_CAP_PROP_FRAME_HEIGHT);
+      if (width > 0 && height > 0)
+      {
+        devices.push_back(captureDevice);
+      }
+      else
+      {
+        loop = false;
+      }
     }
-    videoCapture.release();
+    else
+    {
+      loop = false;
+    }
 
-    return devices;
+    id++;
+  }
+  videoCapture.release();
+
+  return devices;
 }
 
-Capture *CapturePluginHighgui::createCapture(const CaptureDevice captureDevice)
+Capture* CapturePluginHighgui::createCapture(const CaptureDevice captureDevice)
 {
-    return new CaptureHighgui(captureDevice);
+  return new CaptureHighgui(captureDevice);
 }
 
-void registerPlugin(const std::string &captureType, alvar::CapturePlugin *&capturePlugin)
+void registerPlugin(const std::string& captureType, alvar::CapturePlugin*& capturePlugin)
 {
-    capturePlugin = new CapturePluginHighgui(captureType);
+  capturePlugin = new CapturePluginHighgui(captureType);
 }
 
-} // namespace plugins
-} // namespace alvar
+}  // namespace plugins
+}  // namespace alvar

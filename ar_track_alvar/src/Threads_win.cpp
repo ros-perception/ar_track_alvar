@@ -26,68 +26,62 @@
 #include <vector>
 #include <windows.h>
 
-namespace alvar {
-
+namespace alvar
+{
 struct StartThreadParameters
 {
-    void *(*method)(void *);
-    void *parameters;
+  void* (*method)(void*);
+  void* parameters;
 };
 
-static DWORD WINAPI startThread(void *parameters)
+static DWORD WINAPI startThread(void* parameters)
 {
-    DWORD value;
-    struct StartThreadParameters *p = (struct StartThreadParameters *)parameters;
-    value = (DWORD)p->method(p->parameters);
-    delete p;
-	return value;
+  DWORD value;
+  struct StartThreadParameters* p = (struct StartThreadParameters*)parameters;
+  value = (DWORD)p->method(p->parameters);
+  delete p;
+  return value;
 }
 
 class ThreadsPrivateData
 {
 public:
-    ThreadsPrivateData()
-        : mHandles()
-    {
-    }
+  ThreadsPrivateData() : mHandles()
+  {
+  }
 
-    std::vector<HANDLE> mHandles;
+  std::vector<HANDLE> mHandles;
 };
 
-ThreadsPrivate::ThreadsPrivate()
-    : d(new ThreadsPrivateData())
+ThreadsPrivate::ThreadsPrivate() : d(new ThreadsPrivateData())
 {
 }
 
 ThreadsPrivate::~ThreadsPrivate()
 {
-    for (int i = 0; i < (int)d->mHandles.size(); ++i) {
-		CloseHandle(d->mHandles.at(i));
-	}
-	d->mHandles.clear();
+  for (int i = 0; i < (int)d->mHandles.size(); ++i)
+  {
+    CloseHandle(d->mHandles.at(i));
+  }
+  d->mHandles.clear();
 
-    delete d;
+  delete d;
 }
 
-bool ThreadsPrivate::create(void *(*method)(void *), void *parameters)
+bool ThreadsPrivate::create(void* (*method)(void*), void* parameters)
 {
-    StartThreadParameters *p = new StartThreadParameters;
-    p->method = method;
-    p->parameters = parameters;
+  StartThreadParameters* p = new StartThreadParameters;
+  p->method = method;
+  p->parameters = parameters;
 
-    HANDLE thread = CreateThread(
-	    NULL,
-	    0,
-	    (LPTHREAD_START_ROUTINE)startThread,
-	    p,
-	    0,
-	    NULL);
+  HANDLE thread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)startThread, p, 0, NULL);
 
-	if (thread != NULL) {
-        d->mHandles.push_back(thread);
-        return true;
-	}
-	return false;
+  if (thread != NULL)
+  {
+    d->mHandles.push_back(thread);
+    return true;
+  }
+  return false;
 }
 
-} // namespace alvar
+}  // namespace alvar

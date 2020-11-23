@@ -29,8 +29,8 @@
  */
 
 /**
- * \file 
- * 
+ * \file
+ *
  * Test node for kinect filtering
  *
  * \author Bhaskara Marthi
@@ -39,44 +39,43 @@
 #include <ar_track_alvar/kinect_filtering.h>
 #include <fstream>
 
-namespace a=ar_track_alvar;
-namespace gm=geometry_msgs;
+namespace a = ar_track_alvar;
+namespace gm = geometry_msgs;
 
 using std::cerr;
 using std::ifstream;
 
 // Random float between a and b
-float randFloat (float a, float b)
+float randFloat(float a, float b)
 {
-  const float u = static_cast<float>(rand())/RAND_MAX;
-  return a + u*(b-a);
+  const float u = static_cast<float>(rand()) / RAND_MAX;
+  return a + u * (b - a);
 }
 
-// Generate points in a square in space of form p+av+bw where 
+// Generate points in a square in space of form p+av+bw where
 // a and b range from 0 to 1
-a::ARCloud::Ptr generateCloud(const double px, const double py, const double pz,
-                              const double vx, const double vy, const double vz,
-                              const double wx, const double wy, const double wz)
+a::ARCloud::Ptr generateCloud(const double px, const double py, const double pz, const double vx, const double vy,
+                              const double vz, const double wx, const double wy, const double wz)
 {
-  const double INC=0.1;
-  const double NOISE=0.01;
+  const double INC = 0.1;
+  const double NOISE = 0.01;
 
   a::ARCloud::Ptr cloud(boost::make_shared<a::ARCloud>());
-  for (double u=0; u<1+INC/2; u+=INC)
+  for (double u = 0; u < 1 + INC / 2; u += INC)
   {
-    for (double v=0; v<1+INC/2; v+=INC)
+    for (double v = 0; v < 1 + INC / 2; v += INC)
     {
       a::ARPoint p;
-      p.x = px+u*vx+v*wx+randFloat(-NOISE, NOISE);
-      p.y = py+u*vy+v*wy+randFloat(-NOISE, NOISE);
-      p.z = pz+u*vz+v*wz+randFloat(-NOISE, NOISE);
+      p.x = px + u * vx + v * wx + randFloat(-NOISE, NOISE);
+      p.y = py + u * vy + v * wy + randFloat(-NOISE, NOISE);
+      p.z = pz + u * vz + v * wz + randFloat(-NOISE, NOISE);
       cloud->points.push_back(p);
     }
   }
   return cloud;
 }
 
-int main (int argc, char** argv)
+int main(int argc, char** argv)
 {
   ros::init(argc, argv, "test_points");
   ifstream f("points");
@@ -87,9 +86,8 @@ int main (int argc, char** argv)
     f >> pt.x >> pt.y >> pt.z;
     cloud->points.push_back(pt);
   }
-  ROS_INFO("Cloud has %zu points such as (%.2f, %.2f, %.2f)",
-           cloud->points.size(), cloud->points[0].x, cloud->points[0].y,
-           cloud->points[0].z);
+  ROS_INFO("Cloud has %zu points such as (%.2f, %.2f, %.2f)", cloud->points.size(), cloud->points[0].x,
+           cloud->points[0].y, cloud->points[0].z);
   a::ARPoint p1, p2, p3;
   p1.x = 0.1888;
   p1.y = 0.1240;
@@ -102,10 +100,9 @@ int main (int argc, char** argv)
   p3.z = 88;
 
   a::PlaneFitResult res = a::fitPlane(cloud);
-  ROS_INFO("Plane equation is %.3fx + %.3fy + %.3fz + %.3f = 0",
-           res.coeffs.values[0], res.coeffs.values[1], res.coeffs.values[2],
-           res.coeffs.values[3]);
-  
+  ROS_INFO("Plane equation is %.3fx + %.3fy + %.3fz + %.3f = 0", res.coeffs.values[0], res.coeffs.values[1],
+           res.coeffs.values[2], res.coeffs.values[3]);
+
   gm::Quaternion q = a::extractOrientation(res.coeffs, p1, p2, p3, p1);
   ROS_INFO_STREAM("Orientation is " << q);
   return 0;

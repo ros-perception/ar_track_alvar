@@ -24,69 +24,76 @@
 #include "ar_track_alvar/CaptureFactory_private.h"
 
 #include <stdlib.h>
-#include <unistd.h> // for readlink()
+#include <unistd.h>  // for readlink()
 
-namespace alvar {
-
+namespace alvar
+{
 void CaptureFactoryPrivate::setupPluginPaths()
 {
-    // application path and default plugin path
-    const int bufferSize = 4096;
-    char applicationBuffer[bufferSize];
-    int count = readlink("/proc/self/exe", applicationBuffer, bufferSize);
-    if (count != 0 && count < bufferSize) {
-        std::string applicationPath(applicationBuffer, count);
-        applicationPath = std::string(applicationPath, 0, applicationPath.find_last_of("/"));
-        mPluginPaths.push_back(applicationPath);
-        mPluginPaths.push_back(applicationPath + "/alvarplugins");
-    }
-    
-    // ALVAR library path
-    parseEnvironmentVariable(std::string("ALVAR_LIBRARY_PATH"));
+  // application path and default plugin path
+  const int bufferSize = 4096;
+  char applicationBuffer[bufferSize];
+  int count = readlink("/proc/self/exe", applicationBuffer, bufferSize);
+  if (count != 0 && count < bufferSize)
+  {
+    std::string applicationPath(applicationBuffer, count);
+    applicationPath = std::string(applicationPath, 0, applicationPath.find_last_of("/"));
+    mPluginPaths.push_back(applicationPath);
+    mPluginPaths.push_back(applicationPath + "/alvarplugins");
+  }
 
-    // ALVAR plugin path
-    parseEnvironmentVariable(std::string("ALVAR_PLUGIN_PATH"));
+  // ALVAR library path
+  parseEnvironmentVariable(std::string("ALVAR_LIBRARY_PATH"));
+
+  // ALVAR plugin path
+  parseEnvironmentVariable(std::string("ALVAR_PLUGIN_PATH"));
 }
 
-void CaptureFactoryPrivate::parseEnvironmentVariable(const std::string &variable)
+void CaptureFactoryPrivate::parseEnvironmentVariable(const std::string& variable)
 {
-    // acquire environment variable
-    char *buffer;
-    std::string path("");
-    buffer = getenv(variable.data());
-    if (buffer) {
-        path = std::string(buffer);
+  // acquire environment variable
+  char* buffer;
+  std::string path("");
+  buffer = getenv(variable.data());
+  if (buffer)
+  {
+    path = std::string(buffer);
+  }
+
+  // tokenize paths
+  char delimitor = ':';
+  if (!path.empty())
+  {
+    std::string::size_type start = 0;
+    std::string::size_type end = 0;
+    while ((end = path.find_first_of(delimitor, start)) != std::string::npos)
+    {
+      std::string tmp(path, start, end - start);
+      if (!tmp.empty())
+      {
+        mPluginPaths.push_back(tmp);
+      }
+      start = end + 1;
     }
-    
-    // tokenize paths
-    char delimitor = ':';
-    if (!path.empty()) {
-        std::string::size_type start = 0;
-        std::string::size_type end = 0;
-        while ((end = path.find_first_of(delimitor, start)) != std::string::npos) {
-            std::string tmp(path, start, end - start);
-            if (!tmp.empty()) {
-                mPluginPaths.push_back(tmp);
-            }
-            start = end + 1;
-        }
-        if (start != path.size()) {
-            std::string tmp(path, start, std::string::npos);
-            if (!tmp.empty()) {
-                mPluginPaths.push_back(tmp);
-            }
-        }
+    if (start != path.size())
+    {
+      std::string tmp(path, start, std::string::npos);
+      if (!tmp.empty())
+      {
+        mPluginPaths.push_back(tmp);
+      }
     }
+  }
 }
 
 std::string CaptureFactoryPrivate::pluginPrefix()
 {
-    return std::string("lib");
+  return std::string("lib");
 }
 
 std::string CaptureFactoryPrivate::pluginExtension()
 {
-    return std::string("so");
+  return std::string("so");
 }
 
-} // namespace alvar
+}  // namespace alvar

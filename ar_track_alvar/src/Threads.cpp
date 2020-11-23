@@ -25,21 +25,20 @@
 
 #include "ar_track_alvar/Threads_private.h"
 
-namespace alvar {
-
-Threads::Threads()
-    : d(new ThreadsPrivate())
+namespace alvar
+{
+Threads::Threads() : d(new ThreadsPrivate())
 {
 }
 
 Threads::~Threads()
 {
-    delete d;
+  delete d;
 }
 
-bool Threads::create(void *(*method)(void *), void *parameters)
+bool Threads::create(void* (*method)(void*), void* parameters)
 {
-    return d->create(method, parameters);
+  return d->create(method, parameters);
 }
 
-} // namespace alvar
+}  // namespace alvar

@@ -24,21 +24,21 @@
 #ifndef MUTEX_PRIVATE_H
 #define MUTEX_PRIVATE_H
 
-namespace alvar {
-
+namespace alvar
+{
 class MutexPrivateData;
 
 class MutexPrivate
 {
 public:
-    MutexPrivate();
-    ~MutexPrivate();
-    void lock();
-    void unlock();
+  MutexPrivate();
+  ~MutexPrivate();
+  void lock();
+  void unlock();
 
-    MutexPrivateData *d;
+  MutexPrivateData* d;
 };
 
-} // namespace alvar
+}  // namespace alvar
 
 #endif

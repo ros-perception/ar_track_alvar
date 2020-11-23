@@ -31,83 +31,108 @@ template class ALVAR_EXPORT alvar::FilterArray<alvar::FilterDoubleExponentialSmo
 
 using namespace std;
 
-namespace alvar {
+namespace alvar
+{
 using namespace std;
 
-Filter::Filter() { 
-	value=0; 
+Filter::Filter()
+{
+  value = 0;
 }
 
-void FilterAverage::push_to_buffer(double y) {
-	buffer.push_back(y);
-	while (buffer.size() > window_size) {
-		buffer.pop_front();
-	}
+void FilterAverage::push_to_buffer(double y)
+{
+  buffer.push_back(y);
+  while (buffer.size() > window_size)
+  {
+    buffer.pop_front();
+  }
 }
 
-double FilterAverage::next(double y) {
-	if (window_size <= 0) {
-		count++;
-		double alpha = 1.0/count;
-		return (value=((1.0-alpha)*value)+(alpha*y));
-	} else {
-		push_to_buffer(y);
-		double sum = 0;
-		for (deque<double>::iterator iter = buffer.begin(); iter != buffer.end(); iter++) {
-			sum += (double)*iter;
-		}
-		return (value=sum/buffer.size());
-	}
+double FilterAverage::next(double y)
+{
+  if (window_size <= 0)
+  {
+    count++;
+    double alpha = 1.0 / count;
+    return (value = ((1.0 - alpha) * value) + (alpha * y));
+  }
+  else
+  {
+    push_to_buffer(y);
+    double sum = 0;
+    for (deque<double>::iterator iter = buffer.begin(); iter != buffer.end(); iter++)
+    {
+      sum += (double)*iter;
+    }
+    return (value = sum / buffer.size());
+  }
 }
 
-void FilterAverage::reset() {
-	buffer.clear();
+void FilterAverage::reset()
+{
+  buffer.clear();
 }
 
-double FilterAverage::deviation() const {
-	double sum = 0;
-	if (buffer.size() == 0) return 0;
-	for (deque<double>::const_iterator iter = buffer.begin(); iter != buffer.end(); iter++) {
-		double val = ((double)*iter)-value;
-		sum += (val*val);
-	}
-	sum /= buffer.size();
-	return sqrt(sum);
+double FilterAverage::deviation() const
+{
+  double sum = 0;
+  if (buffer.size() == 0)
+    return 0;
+  for (deque<double>::const_iterator iter = buffer.begin(); iter != buffer.end(); iter++)
+  {
+    double val = ((double)*iter) - value;
+    sum += (val * val);
+  }
+  sum /= buffer.size();
+  return sqrt(sum);
 }
 
-double FilterMedian::next(double y) {
-	if (window_size <= 1) return y;
-	push_to_buffer(y);
-	copy(buffer.begin(), buffer.end(), sort_buffer.begin());
-	int nth = buffer.size()/2;
-	nth_element(sort_buffer.begin(), sort_buffer.begin() + nth, sort_buffer.begin()+buffer.size());
-	return value = sort_buffer[nth];
+double FilterMedian::next(double y)
+{
+  if (window_size <= 1)
+    return y;
+  push_to_buffer(y);
+  copy(buffer.begin(), buffer.end(), sort_buffer.begin());
+  int nth = buffer.size() / 2;
+  nth_element(sort_buffer.begin(), sort_buffer.begin() + nth, sort_buffer.begin() + buffer.size());
+  return value = sort_buffer[nth];
 }
 
-double FilterRunningAverage::next(double y) {
-	if (breset) {
-		breset=false;
-		value=(double)y;
-	} else {
-		value = ((1.0-alpha) * value) + (alpha * (double)y);
-	}
-	return value;
+double FilterRunningAverage::next(double y)
+{
+  if (breset)
+  {
+    breset = false;
+    value = (double)y;
+  }
+  else
+  {
+    value = ((1.0 - alpha) * value) + (alpha * (double)y);
+  }
+  return value;
 }
 
-void FilterRunningAverage::reset() { breset=true; }
-
-double FilterDoubleExponentialSmoothing::next(double y) {
-	if (breset) {
-		breset=false;
-		value=(double)y;
-		slope=0.0;
-	}
-	else {
-		double value_prev = value;
-		value = ((1.0-alpha) * (value + slope)) + (alpha * (double)y);
-		slope = ((1.0-gamma) * (slope)) + (gamma * (value - value_prev));
-	}
-	return value;
+void FilterRunningAverage::reset()
+{
+  breset = true;
 }
 
-} // namespace alvar
+double FilterDoubleExponentialSmoothing::next(double y)
+{
+  if (breset)
+  {
+    breset = false;
+    value = (double)y;
+    slope = 0.0;
+  }
+  else
+  {
+    double value_prev = value;
+    value = ((1.0 - alpha) * (value + slope)) + (alpha * (double)y);
+    slope = ((1.0 - gamma) * (slope)) + (gamma * (value - value_prev));
+  }
+  return value;
+}
+
+}  // namespace alvar

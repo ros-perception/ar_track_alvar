@@ -34,57 +34,58 @@
 
 #include <string>
 
-namespace alvar {
-
+namespace alvar
+{
 class DirectoryIteratorPrivate;
 
 /**
  * \brief DirectoryIterator for iterating over files and directories.
  *
- * DirectoryIterator class for iterating over files and directories on the filesystem.
+ * DirectoryIterator class for iterating over files and directories on the
+ * filesystem.
  */
 class ALVAR_EXPORT DirectoryIterator
 {
 public:
-    /**
-     * \brief Constructor.
-     *
-     * \param path The path on the filesystem to iterate.
-     */
-    DirectoryIterator(const std::string &path);
+  /**
+   * \brief Constructor.
+   *
+   * \param path The path on the filesystem to iterate.
+   */
+  DirectoryIterator(const std::string& path);
 
-    /**
-     * \brief Destructor.
-     */
-    ~DirectoryIterator();
+  /**
+   * \brief Destructor.
+   */
+  ~DirectoryIterator();
 
-    /**
-     * \brief Verifies if another entry exist in the directory.
-     */
-    bool hasNext();
+  /**
+   * \brief Verifies if another entry exist in the directory.
+   */
+  bool hasNext();
 
-    /**
-     * \brief Advances the iterator and returns the name of the next entry.
-     */
-    std::string next();
+  /**
+   * \brief Advances the iterator and returns the name of the next entry.
+   */
+  std::string next();
 
-    /**
-     * \brief Returns the name of the current entry.
-     */
-    std::string currentEntry();
+  /**
+   * \brief Returns the name of the current entry.
+   */
+  std::string currentEntry();
 
-    /**
-     * \brief Returns the path of the current entry.
-     *
-     * This appends the name of the current entry to the path of the directory that
-     * is being iterated.
-     */
-    std::string currentPath();
+  /**
+   * \brief Returns the path of the current entry.
+   *
+   * This appends the name of the current entry to the path of the directory
+   * that is being iterated.
+   */
+  std::string currentPath();
 
 private:
-    DirectoryIteratorPrivate *d;
+  DirectoryIteratorPrivate* d;
 };
 
-} // namespace alvar
+}  // namespace alvar
 
 #endif

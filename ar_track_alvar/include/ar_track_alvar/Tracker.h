@@ -33,22 +33,29 @@
 #include <cxcore.h>
 #include "Alvar.h"
 
-namespace alvar {
-
+namespace alvar
+{
 /**
  * \brief Pure virtual base class for tracking optical flow
  *
- * The idea is to make own versions of \e Track method which updates the class member variables accordingly
+ * The idea is to make own versions of \e Track method which updates the class
+ * member variables accordingly
  */
-class ALVAR_EXPORT Tracker {
+class ALVAR_EXPORT Tracker
+{
 public:
-	Tracker() {}
-	/** \brief Pure virtual function for making the next track step. This analyses the image and  updates class member variables accordingly */
-	virtual double Track(IplImage *img) = 0;
+  Tracker()
+  {
+  }
+  /** \brief Pure virtual function for making the next track step. This analyses
+   * the image and  updates class member variables accordingly */
+  virtual double Track(IplImage* img) = 0;
 
-	virtual void Compensate(double *x, double *y) {}
+  virtual void Compensate(double* x, double* y)
+  {
+  }
 };
 
-} // namespace alvar
+}  // namespace alvar
 
 #endif

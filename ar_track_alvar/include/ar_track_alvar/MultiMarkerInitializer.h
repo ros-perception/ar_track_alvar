@@ -34,8 +34,8 @@
 #include "MultiMarker.h"
 #include <Eigen/StdVector>
 
-namespace alvar {
-
+namespace alvar
+{
 /**
  * \brief Initializes multi marker by estimating their relative positions
  * from one or more images.
@@ -50,79 +50,98 @@ namespace alvar {
 class ALVAR_EXPORT MultiMarkerInitializer : public MultiMarker
 {
 public:
-    /**
-     * \brief MarkerMeasurement that holds the maker id.
-     */
-	class MarkerMeasurement : public Marker {
-		long _id;
-	public:
-		MarkerMeasurement() : globalPose(false) {}
-		bool globalPose;
-		unsigned long GetId() const { return _id; }
-		void SetId(unsigned long _id) { this->_id = _id; }
-    };
+  /**
+   * \brief MarkerMeasurement that holds the maker id.
+   */
+  class MarkerMeasurement : public Marker
+  {
+    long _id;
+
+  public:
+    MarkerMeasurement() : globalPose(false)
+    {
+    }
+    bool globalPose;
+    unsigned long GetId() const
+    {
+      return _id;
+    }
+    void SetId(unsigned long _id)
+    {
+      this->_id = _id;
+    }
+  };
 
 protected:
-	std::vector<bool> marker_detected;
-	std::vector<std::vector<MarkerMeasurement, Eigen::aligned_allocator<MarkerMeasurement> > > measurements;
-	typedef std::vector<std::vector<MarkerMeasurement, Eigen::aligned_allocator<MarkerMeasurement> > >::iterator MeasurementIterator;
-	FilterMedian *pointcloud_filtered;
-	int filter_buffer_min;
+  std::vector<bool> marker_detected;
+  std::vector<std::vector<MarkerMeasurement, Eigen::aligned_allocator<MarkerMeasurement> > > measurements;
+  typedef std::vector<std::vector<MarkerMeasurement, Eigen::aligned_allocator<MarkerMeasurement> > >::iterator
+      MeasurementIterator;
+  FilterMedian* pointcloud_filtered;
+  int filter_buffer_min;
 
-	bool updateMarkerPoses(std::vector<MarkerMeasurement, Eigen::aligned_allocator<MarkerMeasurement> > &markers, const Pose &pose);
-	void MeasurementsAdd(MarkerIterator &begin, MarkerIterator &end);
+  bool updateMarkerPoses(std::vector<MarkerMeasurement, Eigen::aligned_allocator<MarkerMeasurement> >& markers,
+                         const Pose& pose);
+  void MeasurementsAdd(MarkerIterator& begin, MarkerIterator& end);
 
 public:
-	MultiMarkerInitializer(std::vector<int>& indices, int filter_buffer_min = 4, int filter_buffer_max = 15);
-	~MultiMarkerInitializer();
+  MultiMarkerInitializer(std::vector<int>& indices, int filter_buffer_min = 4, int filter_buffer_max = 15);
+  ~MultiMarkerInitializer();
 
-	/**
-	 * Adds a new measurement for marker field initialization.
-	 * Each measurement should contain at least two markers.
-	 * It does not matter which markers are visible, especially
-	 * the zero marker does not have to be visible in every measurement.
-	 * It suffices that there exists a 'path' from the zero marker
-	 * to every other marker in the marker field.
-	 *
-	 * For example:
-	 *  - first measurement contains marker A and B.
-	 *  - second measurement containt markers ZERO and A.
-	 *
-	 * When Initialize is called, the system can first deduce the pose of A 
-	 * and then the pose of B.
-	 */
-	template <class M>
-	void MeasurementsAdd(const std::vector<M, Eigen::aligned_allocator<M> > *markers) {
-	    MarkerIteratorImpl<M> begin(markers->begin());
-	    MarkerIteratorImpl<M> end(markers->end());
-        MeasurementsAdd(begin, end);
-	}
+  /**
+   * Adds a new measurement for marker field initialization.
+   * Each measurement should contain at least two markers.
+   * It does not matter which markers are visible, especially
+   * the zero marker does not have to be visible in every measurement.
+   * It suffices that there exists a 'path' from the zero marker
+   * to every other marker in the marker field.
+   *
+   * For example:
+   *  - first measurement contains marker A and B.
+   *  - second measurement containt markers ZERO and A.
+   *
+   * When Initialize is called, the system can first deduce the pose of A
+   * and then the pose of B.
+   */
+  template <class M>
+  void MeasurementsAdd(const std::vector<M, Eigen::aligned_allocator<M> >* markers)
+  {
+    MarkerIteratorImpl<M> begin(markers->begin());
+    MarkerIteratorImpl<M> end(markers->end());
+    MeasurementsAdd(begin, end);
+  }
 
-	/**
-	 * 
-	 */
-	void MeasurementsReset();
+  /**
+   *
+   */
+  void MeasurementsReset();
 
-	/**
-	 * Tries to deduce marker poses from measurements.
-	 *
-	 * Returns the number of initialized markers.
-	 */
-	int Initialize(Camera* cam);
+  /**
+   * Tries to deduce marker poses from measurements.
+   *
+   * Returns the number of initialized markers.
+   */
+  int Initialize(Camera* cam);
 
-	int getMeasurementCount() { return measurements.size(); }
+  int getMeasurementCount()
+  {
+    return measurements.size();
+  }
 
-	const std::vector<MarkerMeasurement, Eigen::aligned_allocator<MarkerMeasurement> >& getMeasurementMarkers(int measurement) {
-		return measurements[measurement];
-	}
+  const std::vector<MarkerMeasurement, Eigen::aligned_allocator<MarkerMeasurement> >&
+  getMeasurementMarkers(int measurement)
+  {
+    return measurements[measurement];
+  }
 
-	double getMeasurementPose(int measurement, Camera *cam, Pose &pose) {
-		MarkerIteratorImpl<MarkerMeasurement> m_begin(measurements[measurement].begin());
-		MarkerIteratorImpl<MarkerMeasurement> m_end(measurements[measurement].end());
-		return _GetPose(m_begin, m_end, cam, pose, NULL);
-	}
+  double getMeasurementPose(int measurement, Camera* cam, Pose& pose)
+  {
+    MarkerIteratorImpl<MarkerMeasurement> m_begin(measurements[measurement].begin());
+    MarkerIteratorImpl<MarkerMeasurement> m_end(measurements[measurement].end());
+    return _GetPose(m_begin, m_end, cam, pose, NULL);
+  }
 };
 
-} // namespace alvar
+}  // namespace alvar
 
 #endif
