@@ -37,11 +37,24 @@
 #include <iostream>
 #include <iomanip>
 #include <sstream>
+#include <opencv2/core/version.hpp>
+#if CV_VERSION_MAJOR < 4
 #include <cxcore.h>
 #include <cv.h>
+#else
+#include <opencv2/opencv.hpp>
+#include <opencv2/core/core_c.h>
+#include <opencv2/imgproc.hpp>
+#include <opencv2/imgproc/imgproc_c.h>
+#endif
 #include <cmath> //for abs
 #include <map>
 #include <opencv2/calib3d/calib3d_c.h> //Compatibility with OpenCV 3.x
+
+#ifdef CV_RGB
+#undef CV_RGB
+#define CV_RGB(r,g,b)	 cvScalar((b), (g), (r), 0)
+#endif
 
 namespace alvar {
 

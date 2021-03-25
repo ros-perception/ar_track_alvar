@@ -277,7 +277,11 @@ void getCapCallback (const sensor_msgs::ImageConstPtr & image_msg)
             // GetMultiMarkersPoses expects an IplImage*, but as of ros groovy, cv_bridge gives
             // us a cv::Mat. I'm too lazy to change to cv::Mat throughout right now, so I
             // do this conversion here -jbinney
+#if CV_VERSION_MAJOR < 4
             IplImage ipl_image = cv_ptr_->image;
+#else
+            IplImage ipl_image = cvIplImage(cv_ptr_->image);
+#endif
 
             //Get the estimated pose of the main marker using the whole bundle
       		static Pose bundlePose;
@@ -422,10 +426,18 @@ int main(int argc, char *argv[])
     std::cout << "Please type commands with the openCV window selected" << std::endl;
 	std::cout << std::endl;
 
+#if CV_VERSION_MAJOR < 4
 	cvNamedWindow("Command input window", CV_WINDOW_AUTOSIZE); 
+#else
+	cv::namedWindow("Command input window", cv::WINDOW_AUTOSIZE); 
+#endif
 
 	while(1){
+#if CV_VERSION_MAJOR < 4
 		int key = cvWaitKey(20);
+#else
+		int key = cv::waitKey(20);
+#endif
 		if(key >= 0)
 			keyProcess(key);
 		ros::spinOnce();

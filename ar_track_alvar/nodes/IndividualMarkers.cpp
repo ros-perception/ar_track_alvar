@@ -345,7 +345,11 @@ void getPointCloudCallback (const sensor_msgs::PointCloud2ConstPtr &msg)
     // GetMultiMarkersPoses expects an IplImage*, but as of ros groovy, cv_bridge gives
     // us a cv::Mat. I'm too lazy to change to cv::Mat throughout right now, so I
     // do this conversion here -jbinney
+#if CV_VERSION_MAJOR < 4
     IplImage ipl_image = cv_ptr_->image;
+#else
+    IplImage ipl_image = cvIplImage(cv_ptr_->image);
+#endif
 
 
     //Use the kinect to improve the pose

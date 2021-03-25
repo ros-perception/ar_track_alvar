@@ -23,7 +23,6 @@
 
 #include "ar_track_alvar/Alvar.h"
 #include "ar_track_alvar/Marker.h"
-#include "highgui.h"
 
 template class ALVAR_EXPORT alvar::MarkerIteratorImpl<alvar::Marker>;
 template class ALVAR_EXPORT alvar::MarkerIteratorImpl<alvar::MarkerData>;
@@ -334,7 +333,11 @@ void Marker::SaveMarkerImage(const char *filename, int save_res) const {
 	cvGetSubRect(img, &submat, cvRect(int(margin*scale), int(margin*scale), int(res*scale), int(res*scale)));
 	cvResize(marker_content, img_content, CV_INTER_NN);
 	cvCopy(img_content, &submat);
+#if CV_VERSION_MAJOR < 4
 	cvSaveImage(filename, img);
+#else
+	cv::imwrite(filename, cv::cvarrToMat(img));
+#endif
 	cvReleaseImage(&img_content);
 	cvReleaseImage(&img);
 }

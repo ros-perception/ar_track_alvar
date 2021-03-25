@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(ar_track_alvar)
 
+add_compile_options(-std=c++14)
+
 set(MSG_DEPS
     ar_track_alvar_msgs
     std_msgs

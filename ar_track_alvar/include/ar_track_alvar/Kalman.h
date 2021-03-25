@@ -31,7 +31,15 @@
  */
 
 #include "Alvar.h"
+#include "opencv2/core/version.hpp"
+#if CV_VERSION_MAJOR < 4
 #include "cxcore.h"
+#include "cv.h"
+#include "highgui.h"
+#else
+#include "opencv2/opencv.hpp"
+#include "opencv2/core/core_c.h"
+#endif
 
 namespace alvar {
 

@@ -101,7 +101,13 @@ void Rotation::Mat9ToRod(double *mat, double *rod)
 	CvMat mat_m, rod_m;
 	cvInitMatHeader(&mat_m, 3, 3, CV_64F, mat);
 	cvInitMatHeader(&rod_m, 3, 1, CV_64F, rod);
+#if CV_VERSION_MAJOR < 4
 	cvRodrigues2(&mat_m, &rod_m);
+#else
+	cv::Mat mat_m_mat = cv::cvarrToMat(&mat_m);
+	cv::Mat rod_m_mat = cv::cvarrToMat(&rod_m);
+	cv::Rodrigues(mat_m_mat, rod_m_mat);
+#endif
 }
 
 void Rotation::RodToMat9(double *rod, double *mat)
@@ -109,7 +115,13 @@ void Rotation::RodToMat9(double *rod, double *mat)
 	CvMat mat_m, rod_m;
 	cvInitMatHeader(&mat_m, 3, 3, CV_64F, mat);
 	cvInitMatHeader(&rod_m, 3, 1, CV_64F, rod);
+#if CV_VERSION_MAJOR < 4
 	cvRodrigues2(&rod_m, &mat_m, 0);
+#else
+	cv::Mat mat_m_mat = cv::cvarrToMat(&mat_m);
+	cv::Mat rod_m_mat = cv::cvarrToMat(&rod_m);
+	cv::Rodrigues(rod_m_mat, mat_m_mat);
+#endif
 }
 
 void Rotation::QuatInv(const double *q, double *qi)

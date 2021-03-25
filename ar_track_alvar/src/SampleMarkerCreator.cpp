@@ -1,5 +1,4 @@
 #include "ar_track_alvar/MultiMarker.h"
-#include "highgui.h"
 using namespace std;
 using namespace alvar;
 
@@ -117,7 +116,11 @@ struct State {
             filenamexml<<filename.str()<<".xml";
             filename<<".png";
             std::cout<<"Saving: "<<filename.str()<<std::endl;
+#if CV_VERSION_MAJOR < 4
             cvSaveImage(filename.str().c_str(), img);
+#else
+            cv::imwrite(filename.str().c_str(), cv::cvarrToMat(img));
+#endif
             if (multi_marker.Size() > 1) {
                 std::cout<<"Saving: "<<filenamexml.str()<<std::endl;
                 multi_marker.Save(filenamexml.str().c_str(), alvar::FILE_FORMAT_XML);

@@ -4,8 +4,14 @@
 #include "Alvar.h"
 #include <vector>
 #include <string>
+#include <opencv2/core/version.hpp>
+#if CV_VERSION_MAJOR < 4
 #include "cv.h"
 #include "highgui.h"
+#else
+#include <opencv2/opencv.hpp>
+#include <opencv2/core/core_c.h>
+#endif
 #include "CaptureFactory.h"
 
 using namespace alvar;
