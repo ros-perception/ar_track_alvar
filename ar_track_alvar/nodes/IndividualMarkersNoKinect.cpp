@@ -101,9 +101,13 @@ void getCapCallback (const sensor_msgs::ImageConstPtr & image_msg)
             // GetMultiMarkersPoses expects an IplImage*, but as of ros groovy, cv_bridge gives
             // us a cv::Mat. I'm too lazy to change to cv::Mat throughout right now, so I
             // do this conversion here -jbinney
+#if CV_VERSION_MAJOR < 4
             IplImage ipl_image = cv_ptr_->image;
-
+#else
+            IplImage ipl_image = cvIplImage(cv_ptr_->image);
+#endif
             marker_detector.Detect(&ipl_image, cam, true, false, max_new_marker_error, max_track_error, CVSEQ, true);
+
             arPoseMarkers_.markers.clear ();
 			for (size_t i=0; i<marker_detector.markers->size(); i++)
 			{

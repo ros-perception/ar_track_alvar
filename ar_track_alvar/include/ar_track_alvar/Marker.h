@@ -42,7 +42,16 @@
 #include "filter/kinect_filtering.h"
 #include <Eigen/StdVector>
 
+#if CV_VERSION_MAJOR < 4
+#include "highgui.h"
+#else
+#include <opencv2/imgproc.hpp>
+#include <opencv2/highgui.hpp>
+#endif
+
 namespace alvar {
+
+//#define CV_RGB_(r,g,b)	 cvScalar((b), (g), (r), 0)
 
   /**
    * \brief Basic 2D \e Marker functionality.

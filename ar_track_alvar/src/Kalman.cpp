@@ -23,9 +23,6 @@
 
 #include <iostream>
 #include <algorithm> // for std::max
-#include "cxcore.h"
-#include "cv.h"
-#include "highgui.h"
 #include "ar_track_alvar/Kalman.h"
 #include "ar_track_alvar/Util.h"
 #include "ar_track_alvar/Alvar.h"
@@ -332,6 +329,7 @@ void KalmanVisualize::Init() {
 	int img_height = 1+n+1+std::max(n, m+1+m)+1;
 	img = cvCreateImage(cvSize(img_width, img_height), IPL_DEPTH_8U, 3);
 	cvSet(img, cvScalar(64,64,64));
+#if CV_VERSION_MAJOR < 4
 	img_legend = cvLoadImage("Legend.png");
 	if (img_legend) {
 		for (img_scale=1; img_scale<50; img_scale++) {
@@ -351,6 +349,29 @@ void KalmanVisualize::Init() {
 		cvSet(img_show, cvScalar(64,64,64));
 		cvNamedWindow("KalmanVisualize",0);
 	}
+#else
+	cv::Mat img_legend_mat;
+	img_legend_mat = cv::imread("Legend.png");
+	*img_legend = cvIplImage(img_legend_mat);
+	if (img_legend) {
+		for (img_scale=1; img_scale<50; img_scale++) {
+			if (img_scale*img_width > img_legend->width) {
+				break;
+			}
+		}
+		img_show = cvCreateImage(cvSize(img_width*img_scale, img_legend->height + img_height*img_scale), IPL_DEPTH_8U, 3);
+		cvSet(img_show, cvScalar(64,64,64));
+		cvSetImageROI(img_show, cvRect(0, 0, img_legend->width, img_legend->height));
+		cvCopy(img_legend, img_show);
+		cvResetImageROI(img_show);
+		cv::namedWindow("KalmanVisualize");
+	} else {
+		img_scale = 1;
+		img_show = cvCreateImage(cvSize(img_width*img_scale, img_height*img_scale), IPL_DEPTH_8U, 3);
+		cvSet(img_show, cvScalar(64,64,64));
+		cv::namedWindow("KalmanVisualize",0);
+	}
+#endif
 }
 
 void KalmanVisualize::out_matrix(CvMat *m, char *name) {
@@ -434,7 +455,11 @@ void KalmanVisualize::update_post() {
 
 void KalmanVisualize::show() {
 	//out_matrix(sensor->K, "K");
+#if CV_VERSION_MAJOR < 4
 	cvShowImage("KalmanVisualize", img_show);
+#else
+	cv::imshow("KalmanVisualize", cv::cvarrToMat(img_show));
+#endif
 }
 
 } // namespace alvar

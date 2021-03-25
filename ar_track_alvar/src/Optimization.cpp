@@ -24,7 +24,6 @@
 #include "ar_track_alvar/Alvar.h"
 #include "ar_track_alvar/Optimization.h"
 #include "time.h"
-#include "highgui.h"
 
 #include <iostream>
 using namespace std;

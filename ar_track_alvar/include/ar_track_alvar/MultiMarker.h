@@ -38,6 +38,9 @@
 #include "FileFormat.h"
 #include <tf/LinearMath/Vector3.h>
 #include <Eigen/StdVector>
+#if CV_VERSION_MAJOR < 4
+#include "highgui.h"
+#endif
 
 namespace alvar {
 

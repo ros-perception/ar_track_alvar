@@ -42,7 +42,11 @@ void CvTestbed::WaitKeys() {
 			if (frame) {
 				default_videocallback(frame);
 				if (wintitle.size() > 0) {
+#if CV_VERSION_MAJOR < 4
 					cvShowImage(wintitle.c_str(), frame);
+#else
+					cv::imshow(wintitle.c_str(), cv::cvarrToMat(frame));
+#endif
 				}
 			}
 		}
@@ -50,7 +54,11 @@ void CvTestbed::WaitKeys() {
 #ifdef WIN32
 		if( (key = cvWaitKey(1)) >= 0 ) {
 #else
+#if CV_VERSION_MAJOR < 4
 		if( (key = cvWaitKey(20)) >= 0 ) {
+#else
+		if( (key = cv::waitKey(20)) >= 0 ) {
+#endif
 #endif
 			if (keycallback) {
 				key = keycallback(key);
@@ -80,7 +88,11 @@ void CvTestbed::WaitKeys() {
 void CvTestbed::ShowVisibleImages() {
 	for (size_t i=0; i<images.size(); i++) {
 		if (images[i].visible) {
+#if CV_VERSION_MAJOR < 4
 			cvShowImage(images[i].title.c_str(), images[i].ipl);
+#else
+			cv::imshow(images[i].title.c_str(), cv::cvarrToMat(images[i].ipl));
+#endif
 		}
 	}
 }
@@ -113,7 +125,11 @@ bool CvTestbed::StartVideo(Capture *_cap, const char *_wintitle) {
 	}
     if (_wintitle) {
         wintitle = _wintitle;
+#if CV_VERSION_MAJOR < 4
         cvNamedWindow(_wintitle, 1);
+#else
+        cv::namedWindow(_wintitle, 1);
+#endif
     }
 	WaitKeys(); // Call the main loop
 	if (clean) {
@@ -181,12 +197,20 @@ bool CvTestbed::ToggleImageVisible(size_t index, int flags) {
 	if (index >= images.size()) return false;
 	if (images[index].visible == false) {
 		images[index].visible=true;
+#if CV_VERSION_MAJOR < 4
 		cvNamedWindow(images[index].title.c_str(), flags);
+#else
+		cv::namedWindow(images[index].title.c_str(), flags);
+#endif
 		return true;
 	}
 	else {
 		images[index].visible=false;
+#if CV_VERSION_MAJOR < 4
 		cvDestroyWindow(images[index].title.c_str());
+#else
+		cv::destroyWindow(images[index].title.c_str());
+#endif
 		return false;
 	}
 }
